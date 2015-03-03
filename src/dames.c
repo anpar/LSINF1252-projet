@@ -53,7 +53,7 @@ void print_board(const struct game *game) {
 	    print_case(game->board[i][j]);
 	    if(j == game->xsize-1) {
 		// Better to create a function that takes xsize as an argument and produce
-		// a line corresponding to the size of tabulation * xize (but it's a details)
+		// a line corresponding to the size of tabulation * xize (but it's a detail)
 		printf("\n----------------------------------------------------------------------------------\n");
 	    }
 	    else {
@@ -107,5 +107,3 @@ int main(int argc, const char *argv[]) {
     print_board(state);
     return(EXIT_SUCCESS);
 }
-
-
