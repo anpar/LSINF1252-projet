@@ -2,39 +2,110 @@
 #include <stdio.h>
 #include "dames.h"
 
-struct game *plateau;
+// Variable globale permettant de stocker l'état du jeu.
+struct game *state;
+
+/*
+ * This function converts the byte reprensenting
+ * the case on the board into a char and printf it.
+ * - -blank character- is an empty case ;
+ * - BP is a black plaw (opposite of WP) ;
+ * - BQ is a black queen (opposite of WQ ;
+ *
+ * Note : may be more efficient and more elegant. This is just
+ * a first version.
+ */
+void print_case(int byte) {
+    // Extraction of the three first bits
+    // Here is a link that explain how to extract the kth bit from
+    // a byte : http://stackoverflow.com/questions/2249731/how-to-get-bit-by-bit-data-from-a-integer-value-in-c
+    int first = (byte & (1 << 0)) >> 0; 
+    int second = (byte & (1 << 1)) >> 1;
+    int third = (byte & (1 << 2)) >> 2;
+    switch(first) {
+	case 0 :
+	    printf(" ");
+	    break;
+	case 1 :
+	    switch(third) {
+		case 0 :
+		    printf("   B");
+		    break;
+		case 1 :
+		    printf("   W");
+		    break;
+	    }
+	    switch(second) {
+		case 0 :
+		    printf("P");
+		    break;
+		case 1 :
+		    printf("Q");
+		    break;
+	    }
+    } 
+}
 
 void print_board(const struct game *game) {
-   int i,j;
-   for(i=0; i<game->xsize;i++) {
-      for(j=0; j<game->ysize;j++) {
-         if(j==game->xsize-1) {
-            printf("y\n");
-	 }
-         else if(j==0) {
-            printf("\tx\t");
-         }
-	 else {
-            printf("x\t");
-         }		
-      }
-   }
-   printf("\n");
+    int i,j;
+    for(i = 0; i<game->xsize; i++) {
+      for(j = 0; j<game->ysize; j++) {
+	    print_case(game->board[i][j]);
+	    if(j == game->xsize-1) {
+		// Better to create a function that takes xsize as an argument and produce
+		// a line corresponding to the size of tabulation * xize (but it's a details)
+		printf("\n----------------------------------------------------------------------------------\n");
+	    }
+	    else {
+        	printf("\t|");
+	    }		
+	}
+    }
 }
 
 struct game *new_game(int xsize, int ysize) {
-   struct game *newplate = (struct game *) malloc(sizeof (struct game));
-   if(newplate == NULL) { 
-      return NULL;
-   }  
-   newplate->xsize=xsize;
-   newplate->ysize=ysize;
-   return newplate;
+    struct game *new_state = (struct game *) malloc(sizeof (struct game));
+    if(new_state == NULL) { 
+	return(NULL);
+    }  
+    new_state->xsize=xsize;
+    new_state->ysize=ysize;
+    new_state->cur_player = PLAYER_WHITE;
+    new_state->board = (int **) malloc(ysize * sizeof(int *));
+    int i;
+    for (i = 0; i < ysize; i++) {
+	new_state->board[i] = (int *) malloc(xsize * sizeof(int));
+    }
+
+    int x,y;
+    for (x = 0; x < xsize; x++) {
+    	for (y = 0; y < ysize; y++) {
+    	    // Empty cases
+    	    if ((x+y) % 2 == 0)  {
+		new_state->board[y][x] = 0;
+	    }
+	    // Black region
+	    else if (y < 4) {
+		new_state->board[y][x] = 1;
+	    }
+	    // White zone
+	    else if (y > ysize - 5) {
+		new_state->board[y][x] = 5;
+	    }
+	    // Empty cases
+	    else {
+		new_state->board[y][x] = 0;
+	    }
+    	}
+    }
+        
+    return new_state;
 }
 
 int main(int argc, const char *argv[]) {
-   plateau = new_game(10,10);
-   print_board(plateau);
+    state = new_game(10,10);
+    print_board(state);
+    return(EXIT_SUCCESS);
 }
 
 
