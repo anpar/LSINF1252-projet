@@ -102,6 +102,30 @@ struct game *new_game(int xsize, int ysize) {
     return new_state;
 }
 
+struct game *load_game(int xsize, int ysize, const int **board, int cur_player) {
+    struct game *loaded_state = (struct game *) malloc(sizeof (struct game));
+    if(loaded_state == NULL) { 
+	return(NULL);
+    } 
+    loaded_state->xsize = xsize;
+    loaded_state->ysize = ysize;
+    loaded_state->cur_player = cur_player;
+    loaded_state->board = (int **) malloc(ysize * sizeof(int *));
+    int i;
+    for (i = 0; i < ysize; i++) {
+	loaded_state->board[i] = (int *) malloc(xsize * sizeof(int));
+    }
+
+    int x,y;
+    for(x=0 ; x < xsize ; x++) {
+        for(y=0 ; y < ysize ; y++) {
+            loaded_game->board[x][y] = **board[x][y];   //This line must be checked : 
+                                                        //as it's only a double pointer, I'm not sure of the syntax
+        }
+    }
+    return loaded_state;
+}
+
 int main(int argc, const char *argv[]) {
     state = new_game(10,10);
     print_board(state);
