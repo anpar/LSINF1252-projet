@@ -126,6 +126,15 @@ struct game *load_game(int xsize, int ysize, const int **board, int cur_player) 
     return loaded_state;
 }
 
+void free_game(struct game *game); {
+    int i;
+    for(i = 0 ; i < game->xsize ; i++) {
+        free(game->board[i]);       //frees the memory used for the secondary tables in the primary table
+    }
+    free(game->board);              //frees the memory used for the primary table
+    free(game);                     //frees the memory used for the structure containing the game
+}
+
 int main(int argc, const char *argv[]) {
     state = new_game(10,10);
     print_board(state);
