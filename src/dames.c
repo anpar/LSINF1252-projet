@@ -5,6 +5,10 @@
 // Variable globale permettant de stocker l'état du jeu.
 struct game *state;
 
+//Variables globales contenant la quantite actuelle de pions blancs/noirs
+//utile pour determiner le gagnant (quand l'autre ==0), peut-etre pas indispensable
+int cur_white, cur_black;     
+
 /*
  * This function converts the byte reprensenting
  * the case on the board into a char and printf it.
@@ -63,6 +67,9 @@ void print_board(const struct game *game) {
     }
 }
 
+
+//new_game
+
 struct game *new_game(int xsize, int ysize) {
     struct game *new_state = (struct game *) malloc(sizeof (struct game));
     if(new_state == NULL) { 
@@ -98,11 +105,19 @@ struct game *new_game(int xsize, int ysize) {
 	    }
     	}
     }
+
+    cur_white = xsize*2;  //enregistre le nombre de pieces en debut de partie
+    cur_black = xsize*2;
         
     return new_state;
 }
 
+
+//load_game
+
 struct game *load_game(int xsize, int ysize, const int **board, int cur_player) {
+    cur_black = 0;  //initialise le nombre de pieces
+    cur_white = 0;
     struct game *loaded_state = (struct game *) malloc(sizeof (struct game));
     if(loaded_state == NULL) { 
 	return(NULL);
@@ -121,12 +136,20 @@ struct game *load_game(int xsize, int ysize, const int **board, int cur_player) 
         for(y=0 ; y < ysize ; y++) {
             loaded_game->board[x][y] = **board[x][y];   //This line must be checked : 
                                                         //as it's only a double pointer, I'm not sure of the syntax
+            //compte le nombre de pieces de chaque couleur
+            if(**board[x][y] == 1 || **board[x][y] == 3) 
+                {cur_black++;}
+            else if(**board[x][y] == 5 || **board[x][y] == 7)
+                {cur_white++;}
         }
     }
     return loaded_state;
 }
 
-void free_game(struct game *game); {
+
+//free_game
+
+void free_game(struct game *game) {
     int i;
     for(i = 0 ; i < game->xsize ; i++) {
         free(game->board[i]);       //frees the memory used for the secondary tables in the primary table
@@ -134,6 +157,24 @@ void free_game(struct game *game); {
     free(game->board);              //frees the memory used for the primary table
     free(game);                     //frees the memory used for the structure containing the game
 }
+
+
+//apply_move
+
+int apply_moves(struct game *game, const struct move *moves) {
+    /*int foe;   //determine la quantite de pieces du joueur attaque en cas de perte de ce dernier
+    if(game->cur_player==PLAYER_WHITE) {
+        foe = cur_black;
+    }
+    else {foe = cur_white;}
+
+    while(moves != NULL) {
+        if(foe==0)         //si cur_player a gagne
+            return(1);
+        if(moves->
+    }*/
+}
+
 
 int main(int argc, const char *argv[]) {
     state = new_game(10,10);
