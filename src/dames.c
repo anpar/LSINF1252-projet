@@ -4,10 +4,7 @@
 
 // Variable globale permettant de stocker l'état du jeu.
 struct game *state;
-
-//Variables globales contenant la quantite actuelle de pions blancs/noirs
-//utile pour determiner le gagnant (quand l'autre ==0), peut-etre pas indispensable
-int cur_white, cur_black;     
+  
 
 /*
  * This function converts the byte reprensenting
@@ -105,10 +102,6 @@ struct game *new_game(int xsize, int ysize) {
 	    }
     	}
     }
-
-    cur_white = xsize*2;  //enregistre le nombre de pieces en debut de partie
-    cur_black = xsize*2;
-        
     return new_state;
 }
 
@@ -136,11 +129,6 @@ struct game *load_game(int xsize, int ysize, const int **board, int cur_player) 
         for(y=0 ; y < ysize ; y++) {
             loaded_game->board[x][y] = **board[x][y];   //This line must be checked : 
                                                         //as it's only a double pointer, I'm not sure of the syntax
-            //compte le nombre de pieces de chaque couleur
-            if(**board[x][y] == 1 || **board[x][y] == 3) 
-                {cur_black++;}
-            else if(**board[x][y] == 5 || **board[x][y] == 7)
-                {cur_white++;}
         }
     }
     return loaded_state;
