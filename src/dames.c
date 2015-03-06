@@ -152,6 +152,13 @@ void free_game(struct game *game) {
 
 //apply_move
 
+/*
+*To Do
+*changement en dames
+*checkvictory
+*current player
+*/
+
 int apply_moves(struct game *game, const struct move *moves) {
     struct move *runner;  //parcourt la liste de moves
     struct move *trace;   //pointeur vers l'element de moves a transferer
