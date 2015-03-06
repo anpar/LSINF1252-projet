@@ -76,6 +76,7 @@ struct game *new_game(int xsize, int ysize) {
     new_state->ysize=ysize;
     new_state->cur_player = PLAYER_WHITE;
     new_state->moves = (struct move *) malloc(sizeof(struct move));
+    new_state->moves->seq = NULL;                                    //malloc ? 
     new_state->board = (int **) malloc(ysize * sizeof(int *));
     int i;
     for (i = 0; i < ysize; i++) {
@@ -118,6 +119,7 @@ struct game *load_game(int xsize, int ysize, const int **board, int cur_player) 
     loaded_state->ysize = ysize;
     loaded_state->cur_player = cur_player;
     loaded_state->moves = (struct move *) malloc(sizeof(struct move)); 
+    loaded_state->moves->seq = NULL;                                    //malloc ? 
     loaded_state->board = (int **) malloc(ysize * sizeof(int *));
     int i;
     for (i = 0; i < ysize; i++) {
@@ -162,7 +164,7 @@ int apply_moves(struct game *game, const struct move *moves) {
         struct *coord taken;        //enregistre les coord d'une piece prise (potentiellement)
         struct move_seq *previous = game->moves->seq;   //mouvement precedent
 
-        validity = is_move_seq_valid(game, moves->seq, previous, taken);
+        validity = is_move_seq_valid(game, runner->seq, previous, taken);
 
         if(validity == 0)          //mouvement invalide
             return (-1);
@@ -196,22 +198,32 @@ int apply_moves(struct game *game, const struct move *moves) {
             }
         }
     }
-
-
-
-    /*int foe;   //determine la quantite de pieces du joueur attaque en cas de perte de ce dernier
-    if(game->cur_player==PLAYER_WHITE) {
-        foe = cur_black;
-    }
-    else {foe = cur_white;}
-
-    while(moves != NULL) {
-        if(foe==0)         //si cur_player a gagne
-            return(1);
-        if(moves->
-    }*/
 }
 
+
+//is_seq_valid
+
+/*
+* verifie la validite d'une sequence suivant cette procedure :
+* 1) c_old existe dans le plateau
+* 2) il y a une piece en c_old
+* 3) la piece en c_old appartient a cur_player
+* 4) c_new existe dans le plateau
+* 5) c_new est vide
+* 6) deplacement diagonal
+* 7) deux mouvements consecutifs sont des prises
+* 8) une prise ne se fait que sur une piece adverse
+* si pion :
+*   1) deplacement vers l'avant 
+*   2) deplacement de 1 case (sauf si prise)
+*   3) si evolution en dame : dernier mouvement de move
+* si dame :
+*   1) se deplace d'autant que possible (jusqu'au bord ou une prise) en ligne droite
+*   2) se deplace en avant OU en arriere
+*/
+int is_move_seq_valid(const struct game *game, const struct move_seq *seq, const struct move_seq *prev, struct coord *taken) {
+    
+}
 
 int main(int argc, const char *argv[]) {
     state = new_game(10,10);
