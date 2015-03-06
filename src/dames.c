@@ -75,6 +75,7 @@ struct game *new_game(int xsize, int ysize) {
     new_state->xsize=xsize;
     new_state->ysize=ysize;
     new_state->cur_player = PLAYER_WHITE;
+    new_state->moves = (struct move *) malloc(sizeof(struct move));
     new_state->board = (int **) malloc(ysize * sizeof(int *));
     int i;
     for (i = 0; i < ysize; i++) {
@@ -109,8 +110,6 @@ struct game *new_game(int xsize, int ysize) {
 //load_game
 
 struct game *load_game(int xsize, int ysize, const int **board, int cur_player) {
-    cur_black = 0;  //initialise le nombre de pieces
-    cur_white = 0;
     struct game *loaded_state = (struct game *) malloc(sizeof (struct game));
     if(loaded_state == NULL) { 
 	return(NULL);
@@ -118,6 +117,7 @@ struct game *load_game(int xsize, int ysize, const int **board, int cur_player) 
     loaded_state->xsize = xsize;
     loaded_state->ysize = ysize;
     loaded_state->cur_player = cur_player;
+    loaded_state->moves = (struct move *) malloc(sizeof(struct move)); 
     loaded_state->board = (int **) malloc(ysize * sizeof(int *));
     int i;
     for (i = 0; i < ysize; i++) {
@@ -143,6 +143,7 @@ void free_game(struct game *game) {
         free(game->board[i]);       //frees the memory used for the secondary tables in the primary table
     }
     free(game->board);              //frees the memory used for the primary table
+    //  FREE MOVES TO DO 
     free(game);                     //frees the memory used for the structure containing the game
 }
 
@@ -150,6 +151,54 @@ void free_game(struct game *game) {
 //apply_move
 
 int apply_moves(struct game *game, const struct move *moves) {
+    struct move *runner;  //parcourt la liste de moves
+    struct move *trace;   //pointeur vers l'element de moves a transferer
+    struct move_seq *seq_runner;
+    runner = moves;
+    seq_runner = runner->seq;
+    while(runner != NULL) {  //Tant que la liste n'est pas vide
+
+        int validity;               //enregistre le resultat du test de validite
+        struct *coord taken;        //enregistre les coord d'une piece prise (potentiellement)
+        struct move_seq *previous = game->moves->seq;   //mouvement precedent
+
+        validity = is_move_seq_valid(game, moves->seq, previous, taken);
+
+        if(validity == 0)          //mouvement invalide
+            return (-1);
+        else {                     //mouvement valide
+            int oldx, oldy, newx, newy;
+            oldx = runner->seq->c_old.x;
+            oldy = runner->seq->c_old.y;
+            newx = runner->seq->c_old.x;
+            newy = runner->seq->c_old.y;
+            game->board[newx][newy] = game->board[oldx][oldy];
+            game->board[oldx][oldy] = 0;
+            
+            if(runner->seq->next == NULL) {  //si la liste de sequences dans 
+                                             //l'element actuel de moves est terminee
+                trace = runner;              //enregistre l'element a transferer dans game->moves
+                runner = runner->next;       //runner avance dans moves
+                trace->next = game->moves;   //relie trace a game->moves
+                game->moves = trace;         //met a jour game->moves
+                seq_runner = runner->seq;    //reinitialise seq_runner 
+                                             //sur la premiere sequence de runner
+            }
+            else {                          //si il reste des sequences dans 
+                                            //l'element actuel de moves
+                seq_runner = seq_runner->next;
+            }
+            if(validity == 2) {        //si prise
+                game->board[taken->x][taken->y] = 0;
+                int victory = checkVictory(game);        //CREER UNE FONCTION CHECKVICTORY !!!
+                if(victory == 1)
+                    return (1);
+            }
+        }
+    }
+
+
+
     /*int foe;   //determine la quantite de pieces du joueur attaque en cas de perte de ce dernier
     if(game->cur_player==PLAYER_WHITE) {
         foe = cur_black;
