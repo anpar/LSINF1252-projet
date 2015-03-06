@@ -4,7 +4,12 @@
 
 // Variable globale permettant de stocker l'état du jeu.
 struct game *state;
-  
+
+/*
+*===================================================================
+*                         Added functions
+*===================================================================
+*/  
 
 /*
  * This function converts the byte reprensenting
@@ -46,6 +51,46 @@ void print_case(int byte) {
 	    }
     } 
 }
+
+
+/*
+*This function extracts the first element of the linked list
+*of moves and returns its value. It frees the element too.
+*/
+struct move_seq *pop(move **list) {
+   struct move *removed=*list;      //adresse de list a liberer   
+   struct move_seq value;                  
+   value = removed->move_seq;
+   *list=removed->next;
+   free(removed);                      
+   return(value);
+}
+
+
+/*
+*This function inserts the move move in
+*the list of moves of game.
+*/
+int push(game *game, move move) {
+   struct move *t;
+   t = (struct node *)malloc(sizeof(struct move));
+   if(t==NULL) {
+      return -1;
+   }
+   else {
+      t->move_seq = move->move_seq;
+      t->next = game->moves;
+      game->moves = t;
+      return 0;
+   }
+}
+
+
+/*
+*===================================================================
+*                       Requested functions                        
+*===================================================================
+*/  
 
 void print_board(const struct game *game) {
     int i,j;
@@ -157,6 +202,7 @@ void free_game(struct game *game) {
 *changement en dames
 *checkvictory
 *current player
+*push et pop
 */
 
 int apply_moves(struct game *game, const struct move *moves) {
