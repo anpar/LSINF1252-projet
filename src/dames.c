@@ -148,9 +148,6 @@ struct game *new_game(int xsize, int ysize) {
     return new_state;
 }
 
-
-//load_game
-
 //struct game *load_game(int xsize, int ysize, const int **board, int cur_player) {
 //    struct game *loaded_state = (struct game *) malloc(sizeof (struct game));
 //    if(loaded_state == NULL) {
@@ -177,9 +174,6 @@ struct game *new_game(int xsize, int ysize) {
 //    return loaded_state;
 //}
 
-
-//free_game
-
 void free_game(struct game *game) {
     int i;
     for(i = 0 ; i < game->xsize ; i++) {
@@ -190,57 +184,94 @@ void free_game(struct game *game) {
     free(game);                     //frees the memory used for the structure containing the game
 }
 
-
 //apply_move
 
 /*
 *To Do
-*changement en dames
+*chgt en dame       DONE
 *checkvictory
-*current player
-*push et pop
+*current player     DONE
+*push et pop        DONE
 */
 
+/*
+*This function applies a move list and inserts it in game->moves following this procedure :
+* 1) initializing of the runners or other variables
+* 2) checking the validity of a sequence
+* 3) applying the move on the game
+* 4) if a plaw has been taken :
+*    5) updating the board
+*    6) checking if the party is over (victory)
+* 7) checking if the sequence has ended
+* 8) if not : restart from 2) with the next element of the sequence
+*    if yes :
+*    9) checking the finale position of a plaw
+*    10) transform the plaw into a queen if needed
+*    11) changing the current player
+*    12) inserting the move in game->moves
+*    13) passing to the next element of the move list
+*    14) if not the end of the move list : restart from 2)
+*/
 //int apply_moves(struct game *game, const struct move *moves) {
-//    struct move *runner;  //parcourt la liste de moves
-//    struct move *trace;   //pointeur vers l'element de moves a transferer
-//    struct move_seq *seq_runner;
+//    struct move *runner;                  //parcourt la liste de moves
+//    struct move_seq *seq_runner;          //parcourt la sequence dans un move
 //    runner = moves;
 //    seq_runner = runner->seq;
-//    while(runner != NULL) {  //Tant que la liste n'est pas vide
+//    struct move_seq *previous = game->moves->seq;   //mouvement precedent d'une sequence
+//    previous = NULL;                                //initialement a NULL en debut de sequence
+//
+//    while(runner != NULL) {      //Tant que la liste de moves n'est pas vide
 //
 //        int validity;               //enregistre le resultat du test de validite
 //        struct *coord taken;        //enregistre les coord d'une piece prise (potentiellement)
-//        struct move_seq *previous = game->moves->seq;   //mouvement precedent
 //
-//        validity = is_move_seq_valid(game, runner->seq, previous, taken);
+//
+//        validity = is_move_seq_valid(game, seq_runner, previous, taken);
 //
 //        if(validity == 0)          //mouvement invalide
 //            return (-1);
 //        else {                     //mouvement valide
 //            int oldx, oldy, newx, newy;
-//            oldx = runner->seq->c_old.x;
-//            oldy = runner->seq->c_old.y;
-//            newx = runner->seq->c_old.x;
-//            newy = runner->seq->c_old.y;
-//            game->board[newx][newy] = game->board[oldx][oldy];
+//            oldx = seq_runner->c_old.x;
+//            oldy = seq_runner->c_old.y;
+//            newx = seq_runner->c_new.x;
+//            newy = seq_runner->c_new.y;
+//            game->board[newx][newy] = game->board[oldx][oldy];   //reajuste la position de la piece depacee
 //            game->board[oldx][oldy] = 0;
 //
 //            if(runner->seq->next == NULL) {  //si la liste de sequences dans
 //                                             //l'element actuel de moves est terminee
-//                trace = runner;              //enregistre l'element a transferer dans game->moves
-//                runner = runner->next;       //runner avance dans moves
-//                trace->next = game->moves;   //relie trace a game->moves
-//                game->moves = trace;         //met a jour game->moves
-//                seq_runner = runner->seq;    //reinitialise seq_runner
-//                                             //sur la premiere sequence de runner
+//
+//                if(game->cur_player == PLAYER_BLACK) {   //tour du jourur noir
+//					if(newy == ysize-1 && game->board[newx][newy] == 1) {
+//						game->board[newx][newy] = 3;     //pion noir -> dame noire
+//					}
+//					game->cur_player = PLAYER_WHITE;     //chgt joueur -> blanc
+//				}
+//                else {                                   //tour du joueur noir
+//					if(newy == 0 && game->board[newx][newy] == 5) {
+//						game->board[newx][newy] = 7;     //pion blanc -> dame blanche
+//					}
+//					game->cur_player = PLAYER_BLACK;     //chgt joueur -> noir
+//				}
+//
+//				push(game, runner->seq);  //insere le move parcouru dans game->moves
+//				runner = runner->next;    //passe a l'element suivant de moves
+//				seq_runner = runner->seq; //ajuste le seq_runner sur runner
+//				previous = NULL;          //reinitialise previous sur NULL (debut de sequence)
+//
 //            }
+//
 //            else {                          //si il reste des sequences dans
 //                                            //l'element actuel de moves
-//                seq_runner = seq_runner->next;
+//
+//				previous = seq_runner,         //ajuste previous sur l'element analysé
+//                seq_runner = seq_runner->next; //passe a l'element suivant de la sequence
 //            }
+//
 //            if(validity == 2) {        //si prise
-//                game->board[taken->x][taken->y] = 0;
+//
+//                game->board[taken->x][taken->y] = 0;     //pliece prise devient vide
 //                int victory = checkVictory(game);        //CREER UNE FONCTION CHECKVICTORY !!!
 //                if(victory == 1)
 //                    return (1);
@@ -249,24 +280,28 @@ void free_game(struct game *game) {
 //    }
 //}
 
+
+//is_seq_valid
+
 /*
- * verifie la validite d'une sequence suivant cette procedure :
- * 1) c_old existe dans le plateau
- * 2) il y a une piece en c_old
- * 3) la piece en c_old appartient a cur_player
- * 4) c_new existe dans le plateau
- * 5) c_new est vide
- * 6) deplacement diagonal
- * 7) deux mouvements consecutifs sont des prises
- * 8) une prise ne se fait que sur une piece adverse
- * si pion :
- *   1) deplacement vers l'avant
- *   2) deplacement de 1 case (sauf si prise)
- *   3) si evolution en dame : dernier mouvement de move
- * si dame :
- *   1) se deplace d'autant que possible (jusqu'au bord ou une prise) en ligne droite
- *   2) se deplace en avant OU en arriere
- */
+* verifie la validite d'une sequence suivant cette procedure :
+* 1) c_old existe dans le plateau
+* 2) il y a une piece en c_old
+* 3) la piece en c_old appartient a cur_player
+* 4) c_new existe dans le plateau
+* 5) c_new est vide
+* 6) deplacement diagonal
+* 7) deux mouvements consecutifs sont des prises
+* 8) une prise ne se fait que sur une piece adverse
+* 9) si 2 prises consecutives : c_old(2e prise) = c_new(1re prise)
+* si pion :
+*   1) deplacement vers l'avant
+*   2) deplacement de 1 case (sauf si prise)
+*   3) si evolution en dame : dernier mouvement de move
+* si dame :
+*   1) se deplace d'autant que possible (jusqu'au bord ou une prise) en ligne droite
+*   2) se deplace en avant OU en arriere
+*/
 int is_move_seq_valid(const struct game *game, const struct move_seq *seq, const struct move_seq *prev, struct coord *taken) {
     return(EXIT_SUCCESS);
 }
