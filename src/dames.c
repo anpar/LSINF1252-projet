@@ -223,8 +223,6 @@ void free_game(struct game *game) {
     //frees the memory used for the structure containing the game
 }
 
-//apply_move
-
 /*
     --------------------
          apply_move
@@ -248,73 +246,94 @@ void free_game(struct game *game) {
     14) if not the end of the move list : restart from 2)
 */
 
-/*int apply_moves(struct game *game, const struct move *moves) {
-    struct move *runner;                  //parcourt la liste de moves
-    struct move_seq *seq_runner;          //parcourt la sequence dans un move
-    runner = moves;
+int apply_moves(struct game *game, const struct move *moves) {
+    // parcourt la liste de moves
+    struct move *runner;
+    // parcourt la sequence dans un move
+    struct move_seq *seq_runner;
+    // Correction du warning avec un typecast
+    runner = (struct move *) moves;
     seq_runner = runner->seq;
-    struct move_seq *previous = game->moves->seq;   //mouvement precedent d'une sequence
-    previous = NULL;                                //initialement a NULL en debut de sequence
+    // mouvement precedent d'une sequence
+    struct move_seq *previous = game->moves->seq;
+    // initialement a NULL en debut de sequence
+    // NOTE : du coup pourquoi l'initialiser à autre chose au dessus @Charles ?
+    previous = NULL;
 
-    while(runner != NULL) {      //Tant que la liste de moves n'est pas vide
+    // Tant que la liste de moves n'est pas vide
+    while(runner != NULL) {
+        struct coord *taken;
+        int validity = is_move_seq_valid(game, seq_runner, previous, taken);
 
-        int validity;               //enregistre le resultat du test de validite
-        struct coord *taken;        //enregistre les coord d'une piece prise (potentiellement)
+        // mouvement invalide
+        if(validity == 0) {
+            return(-1);
+        }
+        // mouvement valide
+        else {
+            int oldx = seq_runner->c_old.x;
+            int oldy = seq_runner->c_old.y;
+            int newx = seq_runner->c_new.x;
+            int newy = seq_runner->c_new.y;
+            // reajuste la position de la piece depacee
+            // NOTE : j'ai un gros doute sur ça depuis le début. Mais est-ce
+            // que ce n'est pas plutt board[y][x], le première indice y désigne les
+            // lignes, et le deuxièmes x désigne les colonnes non? (en tout cas c'est comme ça
+            // que j'ai fais pour print_board et new_game) Si c'est bien le cas,
+            // il faudra inverser ici.
+            game->board[newx][newy] = game->board[oldx][oldy];
+            game->board[oldx][oldy] = EMPTY_CASE;
 
+            // si la liste de sequences dans l'element actuel de moves est terminee
+            if(runner->seq->next == NULL) {
+                // tour du joueur noir
+                if(game->cur_player == PLAYER_BLACK) {
+                    if(newy == game->ysize-1 && game->board[newx][newy] == BLACK_PAWN) {
+                    // pion noir -> dame noire
+                    game->board[newx][newy] = BLACK_PAWN;
+                }
+                // Changement de joueur -> blanc
+                game->cur_player = PLAYER_WHITE;
+                }
+                else {
+                    // tour du joueur noir
+                    if(newy == 0 && game->board[newx][newy] == WHITE_PAWN) {
+                        // pion blanc -> dame blanche
+                        game->board[newx][newy] = WHITE_QUEEN;
+                    }
+                    // Changement de joueur -> noir
+                    game->cur_player = PLAYER_BLACK;
+                }
 
-        validity = is_move_seq_valid(game, seq_runner, previous, taken);
-
-        if(validity == 0)          //mouvement invalide
-            return (-1);
-        else {                     //mouvement valide
-            int oldx, oldy, newx, newy;
-            oldx = seq_runner->c_old.x;
-            oldy = seq_runner->c_old.y;
-            newx = seq_runner->c_new.x;
-            newy = seq_runner->c_new.y;
-            game->board[newx][newy] = game->board[oldx][oldy];   //reajuste la position de la piece depacee
-            game->board[oldx][oldy] = 0;
-
-            if(runner->seq->next == NULL) {  //si la liste de sequences dans
-                                             //l'element actuel de moves est terminee
-
-                if(game->cur_player == PLAYER_BLACK) {   //tour du jourur noir
-			if(newy == game->ysize-1 && game->board[newx][newy] == 1) {
-				game->board[newx][newy] = 3;     //pion noir -> dame noire
-			}
-			game->cur_player = PLAYER_WHITE;     //chgt joueur -> blanc
-		}
-                else {                                   //tour du joueur noir
-			if(newy == 0 && game->board[newx][newy] == 5) {
-				game->board[newx][newy] = 7;     //pion blanc -> dame blanche
-			}
-			game->cur_player = PLAYER_BLACK;     //chgt joueur -> noir
-		}
-
-		push(game, runner->seq);  //insere le move parcouru dans game->moves
-		runner = runner->next;    //passe a l'element suivant de moves
-		seq_runner = runner->seq; //ajuste le seq_runner sur runner
-		previous = NULL;          //reinitialise previous sur NULL (debut de sequence)
-
+                // insere le move parcouru dans game->moves
+                push(game, runner->seq);
+                // passe a l'element suivant de moves
+                runner = runner->next;
+                // ajuste le seq_runner sur runner
+                seq_runner = runner->seq;
+                // reinitialise previous sur NULL (debut de sequence)
+                previous = NULL;
+            }
+            // si il reste des sequences dans l'element actuel de moves
+            else {
+                // ajuste previous sur l'element analysé
+                previous = seq_runner;
+                // passe a l'element suivant de la sequence
+                seq_runner = seq_runner->next;
             }
 
-            else {                          //si il reste des sequences dans
-                                            //l'element actuel de moves
-
-		previous = seq_runner,         //ajuste previous sur l'element analysé
-                seq_runner = seq_runner->next; //passe a l'element suivant de la sequence
-            }
-
-            if(validity == 2) {        //si prise
-
-                game->board[taken->x][taken->y] = 0;     //pliece prise devient vide
-                int victory = checkVictory(game);        //CREER UNE FONCTION CHECKVICTORY !!!
-                if(victory == 1)
+            // Si prise
+            if(validity == 2) {
+                // piece prise remplacée par une case vide
+                game->board[taken->x][taken->y] = EMPTY_CASE;
+                int victory = checkVictory(game);
+                if(victory == 1) {
                     return (1);
+                }
             }
         }
     }
-}*/
+}
 
 /*
     NOTE : je m'étais dis quand une seule fonction c'était faisable
@@ -576,70 +595,6 @@ int undo_moves(struct game *game, int n) {
 }
 
 int main(int argc, char *argv[]) {
-        struct game *state = new_game(10,10);
+    struct game *state = new_game(10,10);
     print_board(state);
-
-	struct move_seq *HUM;
-	HUM = (struct move_seq *)malloc(sizeof (struct move_seq));
-	struct coord old;
-	old.x = 1;
-	old.y = 1;
-	struct coord new;
-	new.x = 2;
-	new.y = 2;
-	HUM->next = NULL;
-	HUM->c_old = old;
-	HUM->c_new = new;
-	HUM->piece_value = 0;
-	HUM->piece_taken = old;
-	HUM->old_orig = 0;
-
-	if(state->moves->seq == NULL) {
-	printf("seq vide\n");
-	}
-	else {printf("seq pas vide, c_old : %d,%d ; c_new : %d;%d \n",state->moves->seq->c_old.x,state->moves->seq->c_old.y,state->moves->seq->c_new.x,state->moves->seq->c_new.y);}
-
-	push(state, HUM);
-	printf("push done\n");
-
-	if(state->moves->seq == NULL) {
-	printf("seq vide\n");
-	}
-	else {printf("seq pas vide, c_old : %d,%d ; c_new : %d;%d \n",state->moves->seq->c_old.x,state->moves->seq->c_old.y,state->moves->seq->c_new.x,state->moves->seq->c_new.y);}
-
-	struct move_seq *popped;
-	popped = pop(&(state->moves));
-
-	printf("apres pop\n");
-	if(state->moves->seq == NULL) {
-	printf("seq vide\n");
-	}
-	else {printf("seq pas vide, c_old : %d,%d ; c_new : %d;%d \n",state->moves->seq->c_old.x,state->moves->seq->c_old.y,state->moves->seq->c_new.x,state->moves->seq->c_new.y);}
-	printf("popped : (%d,%d) -> (%d,%d) \n", popped->c_old.x, popped->c_old.y, popped->c_new.x, popped->c_new.y);
-
-	int vic;
-	vic = checkVictory(state);
-	if(vic == 1) {printf("Virctoire de %d ! \n",state->cur_player);}
-	else {printf("jeu tjs en cours\n");}
-
-	struct game *state2 = new_game(10,10);
-	int i,j;
-	for(i=0 ; i < state2->xsize-1 ; i++) {
-		for(j=0 ; j<state2->ysize-1 ; j++) {
-			if(state2->board[i][j] == 1) {state2->board[i][j] = 0;}
-		}
-	}
-
-	int vic2;
-	vic2 = checkVictory(state2);
-	if(vic2 == 1) {printf("Virctoire (pour state2) de %d ! \n",state2->cur_player);}
-	else {printf("jeu tjs en cours (pour state2)\n");}
-
-	struct game *state3 = load_game(10,10,state2->board,1);
-	int vic3;
-	vic3 = checkVictory(state2);
-	if(vic3 == 1) {printf("Victoire (pour state3) de %d ! \n",state3->cur_player);}
-	else {printf("jeu tjs en cours (pour state3)\n");}
-
-    return(EXIT_SUCCESS);
 }
