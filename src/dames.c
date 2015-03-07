@@ -262,7 +262,10 @@ int apply_moves(struct game *game, const struct move *moves) {
 
     // Tant que la liste de moves n'est pas vide
     while(runner != NULL) {
-        struct coord *taken;
+        // NOTE : il y avait un Segmentation fault à la ligne 476 (taken->x = x_old-1) dans is_move_seq_valid
+        // lors de la prise d'un pion (voir mouvement 4 test de la main). Il manquait un
+        // malloc ici pour que ça fonctionne.
+        struct coord *taken = (struct coord *) malloc(sizeof(struct coord));
         int validity = is_move_seq_valid(game, seq_runner, previous, taken);
 
         // mouvement invalide
@@ -280,26 +283,28 @@ int apply_moves(struct game *game, const struct move *moves) {
             // que ce n'est pas plutt board[y][x], le première indice y désigne les
             // lignes, et le deuxièmes x désigne les colonnes non? (en tout cas c'est comme ça
             // que j'ai fais pour print_board et new_game) Si c'est bien le cas,
-            // il faudra inverser ici.
-            game->board[newx][newy] = game->board[oldx][oldy];
-            game->board[oldx][oldy] = EMPTY_CASE;
+            // il faudra inverser ici. Le test actuel dans le main semble confirmer ce que
+            // je pense, en laissant comme c'était, ça ne fonctionne pas comme prévu. En
+            // inversant, ça fonctionne bien.
+            game->board[newy][newx] = game->board[oldy][oldx];
+            game->board[oldy][oldx] = EMPTY_CASE;
 
             // si la liste de sequences dans l'element actuel de moves est terminee
             if(runner->seq->next == NULL) {
                 // tour du joueur noir
                 if(game->cur_player == PLAYER_BLACK) {
-                    if(newy == game->ysize-1 && game->board[newx][newy] == BLACK_PAWN) {
+                    if(newy == game->ysize-1 && game->board[newy][newx] == BLACK_PAWN) {
                     // pion noir -> dame noire
-                    game->board[newx][newy] = BLACK_PAWN;
+                    game->board[newy][newx] = BLACK_PAWN;
                 }
                 // Changement de joueur -> blanc
                 game->cur_player = PLAYER_WHITE;
                 }
                 else {
                     // tour du joueur noir
-                    if(newy == 0 && game->board[newx][newy] == WHITE_PAWN) {
+                    if(newy == 0 && game->board[newy][newx] == WHITE_PAWN) {
                         // pion blanc -> dame blanche
-                        game->board[newx][newy] = WHITE_QUEEN;
+                        game->board[newy][newx] = WHITE_QUEEN;
                     }
                     // Changement de joueur -> noir
                     game->cur_player = PLAYER_BLACK;
@@ -310,7 +315,12 @@ int apply_moves(struct game *game, const struct move *moves) {
                 // passe a l'element suivant de moves
                 runner = runner->next;
                 // ajuste le seq_runner sur runner
-                seq_runner = runner->seq;
+                if(runner != NULL) {
+                    seq_runner = runner->seq;
+                }
+                // NOTE : la ligne précédent provoque une Segmentation fault avec le test
+                // dans la main. Logique selon puisque dans ce cas-ci runner->next est NULL
+                // et donc après faire NULL->seq ne fonctionne pas. Donc j'ai ajoute lé if.
                 // reinitialise previous sur NULL (debut de sequence)
                 previous = NULL;
             }
@@ -325,7 +335,7 @@ int apply_moves(struct game *game, const struct move *moves) {
             // Si prise
             if(validity == 2) {
                 // piece prise remplacée par une case vide
-                game->board[taken->x][taken->y] = EMPTY_CASE;
+                game->board[taken->y][taken->x] = EMPTY_CASE;
                 int victory = checkVictory(game);
                 if(victory == 1) {
                     return (1);
@@ -340,6 +350,8 @@ int apply_moves(struct game *game, const struct move *moves) {
     de manière assez simple et propre, je n'en suis plus si sur. Je
     pense qu'il y a moyen de rendre ce code beaucoup plus propre et
     élégant. @Charles tu en dis quoi?
+    Et aussi, quid de old_orig, piece_taken et piece_value? C'est ici
+    que je suis sensé m'en occuper?
 */
 
 int is_move_seq_valid(const struct game *game, const struct move_seq *seq, const struct move_seq *prev, struct coord *taken) {
@@ -357,7 +369,7 @@ int is_move_seq_valid(const struct game *game, const struct move_seq *seq, const
         return(0);
     }
     // On vérifie que la pièce en c_old appartient bien au joueur à qui c'est le tour
-    if((game->cur_player) != (game->board[y_old][x_old] & (1 << 2)) >> 2) {
+    if((game->cur_player) != ((game->board[y_old][x_old] & (1 << 2)) >> 2)) {
         return(0);
     }
 
@@ -582,7 +594,6 @@ int is_move_seq_valid(const struct game *game, const struct move_seq *seq, const
         // sans faire de prise
         return(1);
     }
-
     return(0);
 }
 
@@ -596,5 +607,55 @@ int undo_moves(struct game *game, int n) {
 
 int main(int argc, char *argv[]) {
     struct game *state = new_game(10,10);
+    printf("C'est au tour du joueur %d.\n", state->cur_player);
+    print_board(state);
+
+    // NOTE : Je suis un peu perplexe quant au fait qu'il faille définir
+    // les mouvements "à l'envers" ?
+
+    /*
+        Mouvement 4
+    */
+    struct coord c_old4 = {5,4};
+    struct coord c_new4= {3,6};
+    struct move_seq move_seq4;
+    move_seq4.c_new = c_new4;
+    move_seq4.c_old = c_old4;
+    move_seq4.next = NULL;
+    struct move mouvement4 = {NULL, &move_seq4};
+
+    /*
+        Mouvement 3
+    */
+    struct coord c_old3 = {5,6};
+    struct coord c_new3= {6,5};
+    struct move_seq move_seq3;
+    move_seq3.c_new = c_new3;
+    move_seq3.c_old = c_old3;
+    move_seq3.next = NULL;
+    struct move mouvement3 = {&mouvement4, &move_seq3};
+
+    /*
+        Mouvement 2
+    */
+    struct coord c_old2 = {4,3};
+    struct coord c_new2= {5,4};
+    struct move_seq move_seq2;
+    move_seq2.c_new = c_new2;
+    move_seq2.c_old = c_old2;
+    move_seq2.next = NULL;
+    struct move mouvement2 = {&mouvement3, &move_seq2};
+
+    /*
+        Mouvement 1
+    */
+    struct coord c_old1 = {3,6};
+    struct coord c_new1= {4,5};
+    struct move_seq move_seq1;
+    move_seq1.c_new = c_new1;
+    move_seq1.c_old = c_old1;
+    move_seq1.next = NULL;
+    struct move mouvement1 = {&mouvement2, &move_seq1};
+    int apply_moves_result1 = apply_moves(state, &mouvement1);
     print_board(state);
 }
