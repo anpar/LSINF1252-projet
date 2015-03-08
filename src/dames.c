@@ -206,8 +206,6 @@ struct game *load_game(int xsize, int ysize, const int **board, int cur_player) 
     int x,y;
     for(x=0 ; x < xsize ; x++) {
         for(y=0 ; y < ysize ; y++) {
-            // NOTE : @Charles, ici aussi j'ai inverser les y et les x en accord
-            // avec un commentaire précédent.
             loaded_state->board[y][x] = board[y][x];
             // This line must be checked :
             // as it's only a double pointer, I'm not sure of the syntax
@@ -270,9 +268,6 @@ int apply_moves(struct game *game, const struct move *moves) {
 
     // Tant que la liste de moves n'est pas vide
     while(runner != NULL) {
-        // NOTE : il y avait un Segmentation fault à la ligne 476 (taken->x = x_old-1) dans is_move_seq_valid
-        // lors de la prise d'un pion (voir mouvement 4 test de la main). Il manquait un
-        // malloc ici pour que ça fonctionne.
         struct coord *taken = (struct coord *) malloc(sizeof(struct coord));
         int validity = is_move_seq_valid(game, seq_runner, previous, taken);
 
@@ -287,13 +282,7 @@ int apply_moves(struct game *game, const struct move *moves) {
             int newx = seq_runner->c_new.x;
             int newy = seq_runner->c_new.y;
             // reajuste la position de la piece depacee
-            // NOTE : j'ai un gros doute sur ça depuis le début. Mais est-ce
-            // que ce n'est pas plutt board[y][x], le première indice y désigne les
-            // lignes, et le deuxièmes x désigne les colonnes non? (en tout cas c'est comme ça
-            // que j'ai fais pour print_board et new_game) Si c'est bien le cas,
-            // il faudra inverser ici. Le test actuel dans le main semble confirmer ce que
-            // je pense, en laissant comme c'était, ça ne fonctionne pas comme prévu. En
-            // inversant, ça fonctionne bien.
+
             game->board[newy][newx] = game->board[oldy][oldx];
             game->board[oldy][oldx] = EMPTY_CASE;
 
@@ -319,6 +308,12 @@ int apply_moves(struct game *game, const struct move *moves) {
                 }
 
                 // insere le move parcouru dans game->moves
+                /*  NOTE : ici on insère pas le move mais seulement la séquence, ça me parait
+                    bizarre... C'est pour ça que je pensais changer les fonctions push et pop
+                    car selon moi elles sont sensées push un move complet ou poper un move complet,
+                    et pas des move_seq. D'ailleurs les tests que je fais dans la main prouvent
+                    qu'il y a quelque chose qui ne va pas.
+                */
                 push(game, runner->seq);
                 // passe a l'element suivant de moves
                 runner = runner->next;
@@ -326,10 +321,7 @@ int apply_moves(struct game *game, const struct move *moves) {
                 if(runner != NULL) {
                     seq_runner = runner->seq;
                 }
-                // NOTE : la ligne précédent provoque une Segmentation fault avec le test
-                // dans la main. Logique selon puisque dans ce cas-ci runner->next est NULL
-                // et donc après faire NULL->seq ne fonctionne pas. Donc j'ai ajoute lé if.
-                // reinitialise previous sur NULL (debut de sequence)
+
                 previous = NULL;
             }
             // si il reste des sequences dans l'element actuel de moves
@@ -620,9 +612,6 @@ int main(int argc, char *argv[]) {
     printf("C'est au tour du joueur %d.\n", state->cur_player);
     print_board(state);
 
-    // NOTE : Je suis un peu perplexe quant au fait qu'il faille définir
-    // les mouvements "à l'envers" ?
-
     /*
         Mouvement 4
     */
@@ -668,6 +657,18 @@ int main(int argc, char *argv[]) {
     struct move mouvement1 = {&mouvement2, &move_seq1};
     int apply_moves_result1 = apply_moves(state, &mouvement1);
     print_board(state);
+
+    /*
+        Affichons game->move pour voir ce que ça dit
+    */
+    printf("Adresse du premier mouvement : %p.\n", state->moves);
+    printf("Adresse de la première séquence du premier mouvement : %p.\n", state->moves->seq);
+    printf("Déplacement de (%d,%d) à (%d,%d).\n", state->moves->seq->c_old.x, state->moves->seq->c_old.y, state->moves->seq->c_new.x, state->moves->seq->c_new.y);
+    printf("Adresse de la deuxième séquence du premier mouvement : %p.\n", state->moves->seq->next);
+    struct move_seq *pop1 = pop(&(state->moves));
+    printf("Adresse de l'avant-dernier mouvement : %p.\n", state->moves);
+    // NOTE : la dernière ligne retourne (nil). ça prouve selon moi qu'il y a un problème avec
+    // les fonctions push/pop.
 
     free_game(state);
 }

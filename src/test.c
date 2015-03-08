@@ -19,14 +19,6 @@ void test_load_game(void) {
 
 }
 
-void test_print_case(void) {
-
-}
-
-void test_print_board(void) {
-
-}
-
 void test_free_game(void) {
 
 }
@@ -75,4 +67,10 @@ int main(void) {
       CU_cleanup_registry();
       return CU_get_error();
    }
+
+    /* Run all tests using the CUnit Basic interface */
+    CU_basic_set_mode(CU_BRM_SILENT);
+    CU_basic_run_tests();
+    CU_cleanup_registry();
+    return CU_get_error();
 }
