@@ -266,10 +266,7 @@ int apply_moves(struct game *game, const struct move *moves) {
     runner = (struct move *) moves;
     seq_runner = runner->seq;
     // mouvement precedent d'une sequence
-    struct move_seq *previous = game->moves->seq;
-    // initialement a NULL en debut de sequence
-    // NOTE : du coup pourquoi l'initialiser à autre chose au dessus @Charles ?
-    previous = NULL;
+    struct move_seq *previous = NULL;
 
     // Tant que la liste de moves n'est pas vide
     while(runner != NULL) {
