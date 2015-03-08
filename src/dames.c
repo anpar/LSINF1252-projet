@@ -301,7 +301,7 @@ int apply_moves(struct game *game, const struct move *moves) {
             game->board[oldy][oldx] = EMPTY_CASE;
 
             // si la liste de sequences dans l'element actuel de moves est terminee
-            if(runner->seq->next == NULL) {
+            if(seq_runner->next == NULL) {
                 // tour du joueur noir
                 if(game->cur_player == PLAYER_BLACK) {
                     if(newy == game->ysize-1 && game->board[newy][newx] == BLACK_PAWN) {
