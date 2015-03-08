@@ -68,7 +68,7 @@ struct move_seq *pop(struct move **list) {
 */
 int push(struct game *game, struct move_seq *move) {
     struct move *t;
-    t = (struct move *)malloc(sizeof(struct move));
+    t = (struct move *) malloc(sizeof(struct move));
     if(t == NULL) {
         return(-1);
     }
@@ -76,6 +76,7 @@ int push(struct game *game, struct move_seq *move) {
         t->seq = move;
         t->next = game->moves;
         game->moves = t;
+        free(t);
         return(0);
     }
 }
@@ -159,19 +160,19 @@ struct game *new_game(int xsize, int ysize) {
     	for (y = 0; y < ysize; y++) {
     	    // Empty cases
     	    if ((x+y) % 2 == 0)  {
-                new_state->board[y][x] = 0;
+                new_state->board[y][x] = EMPTY_CASE;
             }
             // Black region
             else if (y < 4) {
-                new_state->board[y][x] = 1;
+                new_state->board[y][x] = BLACK_PAWN;
             }
             // White zone
             else if (y > ysize - 5) {
-                new_state->board[y][x] = 5;
+                new_state->board[y][x] = WHITE_PAWN;
             }
             // Empty cases
             else {
-                new_state->board[y][x] = 0;
+                new_state->board[y][x] = EMPTY_CASE;
             }
     	}
     }
@@ -185,28 +186,34 @@ struct game *new_game(int xsize, int ysize) {
 */
 struct game *load_game(int xsize, int ysize, const int **board, int cur_player) {
     struct game *loaded_state = (struct game *) malloc(sizeof (struct game));
+
     if(loaded_state == NULL) {
-	return(NULL);
+        return(NULL);
     }
+
     loaded_state->xsize = xsize;
     loaded_state->ysize = ysize;
     loaded_state->cur_player = cur_player;
     loaded_state->moves = (struct move *) malloc(sizeof(struct move));
     loaded_state->moves->seq = NULL; // malloc ?
     loaded_state->board = (int **) malloc(ysize * sizeof(int *));
+
     int i;
     for (i = 0; i < ysize; i++) {
-	loaded_state->board[i] = (int *) malloc(xsize * sizeof(int));
+        loaded_state->board[i] = (int *) malloc(xsize * sizeof(int));
     }
 
     int x,y;
     for(x=0 ; x < xsize ; x++) {
         for(y=0 ; y < ysize ; y++) {
-            loaded_state->board[x][y] = board[x][y];
+            // NOTE : @Charles, ici aussi j'ai inverser les y et les x en accord
+            // avec un commentaire précédent.
+            loaded_state->board[y][x] = board[y][x];
             // This line must be checked :
             // as it's only a double pointer, I'm not sure of the syntax
         }
     }
+
     return loaded_state;
 }
 
@@ -218,9 +225,13 @@ void free_game(struct game *game) {
     }
     //frees the memory used for the primary table
     free(game->board);
-    //  FREE MOVES TO DO
+    // NOTE : valgrind indique un invalid free ici, je le mets temporairement
+    // en commentaire pour voir (valgrind préfère comme, il faut comprendre
+    // pourquoi. D'un autre côté, valgrind indique aussi une perte de 16 bytes ici.
+    // En remettant cette ligne-ci on constate cependant que la perde n'est pas résolue.
+    //free(game->moves);
     free(game);
-    //frees the memory used for the structure containing the game
+    // frees the memory used for the structure containing the game
 }
 
 /*
@@ -342,6 +353,8 @@ int apply_moves(struct game *game, const struct move *moves) {
                 }
             }
         }
+        free(taken);
+        taken = NULL;
     }
 }
 
@@ -658,4 +671,6 @@ int main(int argc, char *argv[]) {
     struct move mouvement1 = {&mouvement2, &move_seq1};
     int apply_moves_result1 = apply_moves(state, &mouvement1);
     print_board(state);
+
+    free_game(state);
 }
