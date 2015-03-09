@@ -149,6 +149,39 @@ void test_pop(void) {
     free(seq_3);
 }
 
+/*
+    Fonctions permettant de créer un jeu avec un plateau vide.
+    Pratique pour créer des situations particulière pour les tests.
+*/
+struct game *new_empty_game(int xsize, int ysize) {
+    struct game *game = (struct game *) malloc(sizeof (struct game));
+    if(game == NULL) {
+        return(NULL);
+    }
+
+    // Initialisations triviales
+    game->xsize=xsize;
+    game->ysize=ysize;
+    game->cur_player = 1;
+    game->moves = NULL;
+
+    // Allocations dynamiques de board
+    game->board = (int **) malloc(xsize * sizeof(int *));
+    int i;
+    for (i = 0; i < xsize; i++) {
+        game->board[i] = (int *) malloc(ysize * sizeof(int));
+    }
+
+    // Remplissage du plateau
+    int x,y;
+    for (x = 0; x < xsize; x++) {
+    	for (y = 0; y < ysize; y++) {
+            game->board[x][y] = EMPTY_CASE;
+    	}
+    }
+    return(game);
+}
+
 void test_is_move_seq_valid(void) {
     struct game *game = new_game(10,10);
 
@@ -301,15 +334,99 @@ void test_is_move_seq_valid(void) {
 
     CU_ASSERT(is_move_seq_valid(game, seq, NULL, taken) == 0);
     CU_ASSERT(taken->x == -1);
-    CU_ASSERT(taken->y == -1)
+    CU_ASSERT(taken->y == -1);
+
+    // On crée maintenant un plateau vide pour faire des tests plus particuliers.
+    game = new_empty_game(10,10);
+
+    // Cas #15 : un pion essaye d'effectuer deux mouvements alors qu'il n'a pas pris de pion
+    // adverse à la séquence précédente
+    struct move_seq *seq_prev = (struct move_seq *) malloc(sizeof(struct move_seq));
+    struct coord c_old_16 = {4,7};
+    struct coord c_new_16 = {5,6};
+    seq->c_new = c_new_16;
+    seq->c_old = c_old_16;
+
+    struct coord c_old_15 = {3,8};
+    struct coord c_new_15 = {4,7};
+    seq_prev->c_new = c_new_15;
+    seq_prev->c_old = c_old_15;
+    seq_prev->next = seq;
+
+    game->board[4][7] = WHITE_PAWN;
+
+    CU_ASSERT(is_move_seq_valid(game, seq, seq_prev, taken) == 0);
+    CU_ASSERT(taken->x == -1);
+    CU_ASSERT(taken->y == -1);
+
+    // Cas #16 : après avoir testé le cas #15, j'ai dû modifié la fonction is_move_seq_valid
+    // car elle ne fonctionnait pas comme prévu. Un petit test maintenant pour vérifier le cas
+    // opposé valide du cas #16. Un pion se déplace 2 fois, grâce à une prise effectuée.
+    game->board[4][7] = BLACK_PAWN;
+    game->board[5][6] = WHITE_PAWN;
+
+    struct coord c_old_18 = {5,6};
+    struct coord c_new_18 = {4,5};
+    seq->c_new = c_new_18;
+    seq->c_old = c_old_18;
+
+    struct coord c_old_17 = {3,8};
+    struct coord c_new_17 = {5,6};
+    seq_prev->c_new = c_new_17;
+    seq_prev->c_old = c_old_17;
+    seq_prev->next = seq;
+    // Normalement, pour une suite de séquence comme celle-ci,
+    // la première étant valide, elle passera dans apply_moves
+    // et on aura donc :
+    seq_prev->piece_value = BLACK_PAWN;
+    CU_ASSERT(is_move_seq_valid(game, seq, seq_prev, taken) == 1);
+    CU_ASSERT(taken->x == -1);
+    CU_ASSERT(taken->y == -1);
+
+    seq_prev->piece_value = 0;
+
+    // Cas #19 : (test car un souci apparait dans programme.c)
+    // Un pion noir prend un pion blanc dans la direction des x
+    // et des y croissants.
+    game = new_empty_game(10,10);
+    game->board[7][6] = BLACK_PAWN;
+    //game->board[5][4] = BLACK_PAWN;
+    game->board[6][5] = WHITE_PAWN;
+    game->board[8][5] = WHITE_PAWN;
+    //game->board[0][9] = WHITE_PAWN;
+    game->cur_player = 0;
+
+    struct coord c_old_20 = {7,6};
+    struct coord c_new_20 = {9,4};
+    seq->c_new = c_new_20;
+    seq->c_old = c_old_20;
+
+    struct coord c_old_19 = {5,4};
+    struct coord c_new_19 = {7,6};
+    seq_prev->c_new = c_new_19;
+    seq_prev->c_old = c_old_19;
+    seq_prev->next = seq;
+    seq_prev->piece_value = WHITE_PAWN;
+
+    CU_ASSERT(is_move_seq_valid(game, seq, seq_prev, taken) == 2);
+    CU_ASSERT(taken->x == 8);
+    CU_ASSERT(taken->y == 5)
+    //struct move test = {NULL, seq_prev};
+    //CU_ASSERT(apply_moves(game, &test) == 0);
+    //print_board(game);
 
     free(seq);
+    free(seq_prev);
     free(taken);
 }
 
 void test_apply_moves(void)
 {
-
+    // Cas #1 : avancée simple
+    // Cas #2 : prise simple
+    // Cas #3 : prise double
+    // Cas #4 : transformation en dame
+    // Cas #5 : victoire
 }
 
 void test_undo_moves(void) {

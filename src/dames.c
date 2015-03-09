@@ -276,7 +276,6 @@ int apply_moves(struct game *game, const struct move *moves) {
         // S'il n'y a pas eu de prise mais que le mouvement est valide
         else {
             seq_runner->piece_value = 0;
-            // NOTE : finalement on met -1 par défaut
             seq_runner->piece_taken.x = -1;
             seq_runner->piece_taken.y = -1;
         }
@@ -356,6 +355,7 @@ int is_move_seq_valid(const struct game *game, const struct move_seq *seq, const
     if ((x_old + y_old) % 2 == 0) {
         return(0);
     }
+
     // On vérifie que la pièce en c_old appartient bien au joueur à qui c'est le tour
     if((game->cur_player) != ((game->board[x_old][y_old] & (1 << 2)) >> 2)) {
         return(0);
@@ -363,13 +363,17 @@ int is_move_seq_valid(const struct game *game, const struct move_seq *seq, const
 
     // S'il y a eu un move_seq précédent
     if(prev != NULL) {
+
         struct coord prev_c_new = prev->c_new;
         int prev_x_new = prev_c_new.x;
         int prev_y_new = prev_c_new.y;
-
         // On vérifie que le move_seq précédent et celui-ci sont en accord (i.e c_new du
         // précédent move_seq = c_old de move_seq actuel)
         if((x_old != prev_x_new) || (y_old != prev_y_new)) {
+            return(0);
+        }
+
+        if(prev->piece_value == 0) {
             return(0);
         }
         // Il n'est pas nécessaire d'aller plus loin et de vérifier
@@ -392,6 +396,7 @@ int is_move_seq_valid(const struct game *game, const struct move_seq *seq, const
     if((x_new + y_new) % 2 == 0) {
         return(0);
     }
+
     // On vérifie que c_new est bien vide
     if((game->board[x_new][y_new] & (1 << 0)) >> 0 == 1) {
         return(0);
