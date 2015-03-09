@@ -98,7 +98,7 @@ int check_victory(struct game *game) {
     for(x = 0 ; x < game->xsize; x++) {
         for(y = 0 ; y < game->ysize; y++) {
             // On vérifie s'il reste des pièces de types v1 ou v2
-            if((game->board[y][x] == v1) || (game->board[y][x] == v2)) {
+            if((game->board[x][y] == v1) || (game->board[x][y] == v2)) {
                 // Si c'est le cas, il reste des pièces adverses
                 return(0);
             }
@@ -121,7 +121,7 @@ void print_board(const struct game *game) {
     int x,y;
     for(y = 0; y < game->ysize; y++) {
         for(x = 0; x < game->xsize; x++) {
-            print_case(game->board[y][x]);
+            print_case(game->board[x][y]);
             if(x == game->xsize-1) {
                 // TODO : faire une fonction qui génère une ligne qui dépend de xsize
                 printf("\n----------------------------------------------------------------------------------\n");
@@ -149,10 +149,10 @@ struct game *new_game(int xsize, int ysize) {
     game->moves = NULL;
 
     // Allocations dynamiques de board
-    game->board = (int **) malloc(ysize * sizeof(int *));
+    game->board = (int **) malloc(xsize * sizeof(int *));
     int i;
-    for (i = 0; i < ysize; i++) {
-        game->board[i] = (int *) malloc(xsize * sizeof(int));
+    for (i = 0; i < xsize; i++) {
+        game->board[i] = (int *) malloc(ysize * sizeof(int));
     }
 
     // Remplissage du plateau
@@ -161,19 +161,19 @@ struct game *new_game(int xsize, int ysize) {
     	for (y = 0; y < ysize; y++) {
     	    // Cases vides
     	    if ((x+y) % 2 == 0)  {
-                game->board[y][x] = EMPTY_CASE;
+                game->board[x][y] = EMPTY_CASE;
             }
             // Pions noirs
             else if (y < ysize/2 - 1) {
-                game->board[y][x] = BLACK_PAWN;
+                game->board[x][y] = BLACK_PAWN;
             }
             // Pions blancs
             else if (y > ysize/2) {
-                game->board[y][x] = WHITE_PAWN;
+                game->board[x][y] = WHITE_PAWN;
             }
             // Cases vides restantes
             else {
-                game->board[y][x] = EMPTY_CASE;
+                game->board[x][y] = EMPTY_CASE;
             }
     	}
     }
@@ -198,17 +198,17 @@ struct game *load_game(int xsize, int ysize, const int **board, int cur_player) 
     loaded_state->moves = NULL;
 
     // Allocations dynamiques de board
-    loaded_state->board = (int **) malloc(ysize * sizeof(int *));
+    loaded_state->board = (int **) malloc(xsize * sizeof(int *));
     int i;
-    for (i = 0; i < ysize; i++) {
-        loaded_state->board[i] = (int *) malloc(xsize * sizeof(int));
+    for (i = 0; i < xsize; i++) {
+        loaded_state->board[i] = (int *) malloc(ysize * sizeof(int));
     }
 
     // Remplisage du plateau
     int x,y;
     for(x=0 ; x < xsize ; x++) {
         for(y=0 ; y < ysize ; y++) {
-            loaded_state->board[y][x] = board[y][x];
+            loaded_state->board[x][y] = board[x][y];
         }
     }
 
@@ -221,7 +221,7 @@ struct game *load_game(int xsize, int ysize, const int **board, int cur_player) 
 void free_game(struct game *game) {
     // On libère d'abord le plateau
     int i;
-    for(i = 0; i < game->ysize; i++) {
+    for(i = 0; i < game->xsize; i++) {
         free(game->board[i]);
     }
     free(game->board);
@@ -265,9 +265,9 @@ int apply_moves(struct game *game, const struct move *moves) {
         }
         // S'il y a eu une prise
         else if(validity == 2) {
-            seq_runner->piece_value = game->board[taken->y][taken->x];
+            seq_runner->piece_value = game->board[taken->x][taken->y];
             seq_runner->piece_taken = *taken;
-            game->board[taken->y][taken->x] = EMPTY_CASE;
+            game->board[taken->x][taken->y] = EMPTY_CASE;
             // On vérifie que la prise de la pièce n'a pas entrainé la victoire d'un joueur
             if(check_victory(game) == 1) {
                 return(1);
@@ -287,20 +287,20 @@ int apply_moves(struct game *game, const struct move *moves) {
         int oldx = seq_runner->c_old.x;
         int oldy = seq_runner->c_old.y;
 
-        seq_runner->old_orig = game->board[oldy][oldx];
+        seq_runner->old_orig = game->board[oldx][oldy];
 
         // Et modifier le plateau en conséquence
-        game->board[newy][newx] = game->board[oldy][oldx];
-        game->board[oldy][oldx] = EMPTY_CASE;
+        game->board[newx][newy] = game->board[oldx][oldy];
+        game->board[oldx][oldy] = EMPTY_CASE;
 
         // Si on est à la dernière séquence du mouvement
         if(seq_runner->next == NULL) {
             // Si c'était le tour du joueur noir
             if(game->cur_player == PLAYER_BLACK) {
                 // Si un pion noir a touché le bord
-                if(newy == game->ysize-1 && game->board[newy][newx] == BLACK_PAWN) {
+                if(newy == game->ysize-1 && game->board[newx][newy] == BLACK_PAWN) {
                     // Alors on le transforme en dame
-                    game->board[newy][newx] = BLACK_QUEEN;
+                    game->board[newx][newy] = BLACK_QUEEN;
                 }
                 // C'est ensuite au joueur suivant de jouer
                 game->cur_player = PLAYER_WHITE;
@@ -308,9 +308,9 @@ int apply_moves(struct game *game, const struct move *moves) {
             // Si c'était le tour du joueur blanc
             else {
                 // Si un pion blanc à toucher le bord
-                if(newy == 0 && game->board[newy][newx] == WHITE_PAWN) {
+                if(newy == 0 && game->board[newx][newy] == WHITE_PAWN) {
                     // Alors on le transforme en dame
-                    game->board[newy][newx] = WHITE_QUEEN;
+                    game->board[newx][newy] = WHITE_QUEEN;
                 }
                 // C'est ensuite au joueur suivant de jouer
                 game->cur_player = PLAYER_BLACK;
@@ -357,7 +357,7 @@ int is_move_seq_valid(const struct game *game, const struct move_seq *seq, const
         return(0);
     }
     // On vérifie que la pièce en c_old appartient bien au joueur à qui c'est le tour
-    if((game->cur_player) != ((game->board[y_old][x_old] & (1 << 2)) >> 2)) {
+    if((game->cur_player) != ((game->board[x_old][y_old] & (1 << 2)) >> 2)) {
         return(0);
     }
 
@@ -393,7 +393,7 @@ int is_move_seq_valid(const struct game *game, const struct move_seq *seq, const
         return(0);
     }
     // On vérifie que c_new est bien vide
-    if((game->board[y_new][x_new] & (1 << 0)) >> 0 == 1) {
+    if((game->board[x_new][y_new] & (1 << 0)) >> 0 == 1) {
         return(0);
     }
 
@@ -401,7 +401,7 @@ int is_move_seq_valid(const struct game *game, const struct move_seq *seq, const
     // Pour cela, on doit envisager les différents cas
 
     // Si c'est un pion
-    if(((game->board[y_old][x_old] & (1 << 1)) >> 1) == 0) {
+    if(((game->board[x_old][y_old] & (1 << 1)) >> 1) == 0) {
         // Si c'est un pion blanc
         if(game->cur_player == PLAYER_WHITE) {
             // Déplacement classique, sans prise et donc vers l'avant
@@ -412,7 +412,7 @@ int is_move_seq_valid(const struct game *game, const struct move_seq *seq, const
             else if(y_new-y_old == -2 && x_new-x_old == 2) {
 
                 // On vérifie qu'il y bien prise d'un pièce adverse
-                if(((game->board[y_old-1][x_old+1]) == BLACK_PAWN) || (((game->board[y_old-1][x_old+1]) == BLACK_QUEEN))) {
+                if(((game->board[x_old+1][y_old-1]) == BLACK_PAWN) || (((game->board[x_old+1][y_old-1]) == BLACK_QUEEN))) {
                     taken->x = x_old+1;
                     taken->y = y_old-1;
                     return(2);
@@ -420,7 +420,7 @@ int is_move_seq_valid(const struct game *game, const struct move_seq *seq, const
             }
             // Déplacement double vers l'avant et vers la gauche (prise)
             else if(y_new-y_old == -2 && x_new-x_old == -2) {
-                if(((game->board[y_old-1][x_old-1]) == BLACK_PAWN) || (((game->board[y_old-1][x_old-1]) == BLACK_QUEEN))) {
+                if(((game->board[x_old-1][y_old-1]) == BLACK_PAWN) || (((game->board[x_old-1][y_old-1]) == BLACK_QUEEN))) {
                     taken->x = x_old-1;
                     taken->y = y_old-1;
                     return(2);
@@ -428,15 +428,15 @@ int is_move_seq_valid(const struct game *game, const struct move_seq *seq, const
             }
             // Déplacement double vers l'arrière et vers la droite (prise)
             else if(y_new-y_old == 2 && x_new-x_old == 2) {
-                if(((game->board[y_old+1][x_old+1]) == BLACK_PAWN) || (((game->board[y_old+1][x_old+1]) == BLACK_QUEEN))) {
+                if(((game->board[x_old+1][y_old+1]) == BLACK_PAWN) || (((game->board[x_old+1][y_old+1]) == BLACK_QUEEN))) {
                     taken->x = x_old+1;
-                    taken->y = y_old-1;
+                    taken->y = y_old+1;
                     return(2);
                 }
             }
             // Déplacement double vers l'arrière et vers la gauche (prise)
             else if(y_new-y_old == 2 && x_new-x_old == -2) {
-                if(((game->board[y_old+1][x_old-1]) == BLACK_PAWN) || (((game->board[y_old+1][x_old-1]) == BLACK_QUEEN))) {
+                if(((game->board[x_old-1][y_old+1]) == BLACK_PAWN) || (((game->board[x_old-1][y_old+1]) == BLACK_QUEEN))) {
                     taken->x = x_old-1;
                     taken->y = y_old+1;
                     return(2);
@@ -455,7 +455,7 @@ int is_move_seq_valid(const struct game *game, const struct move_seq *seq, const
             }
             // Déplacement double vers l'avant et vers la droite (prise)
             else if(y_new-y_old == 2 && x_new-x_old == 2) {
-                if(((game->board[y_old+1][x_old+1]) == WHITE_PAWN) || (((game->board[y_old+1][x_old+1]) == WHITE_QUEEN))) {
+                if(((game->board[x_old+1][y_old+1]) == WHITE_PAWN) || (((game->board[x_old+1][y_old+1]) == WHITE_QUEEN))) {
                     taken->x = x_old+1;
                     taken->y = y_old+1;
                     return(2);
@@ -463,7 +463,7 @@ int is_move_seq_valid(const struct game *game, const struct move_seq *seq, const
             }
             // Déplacement double vers l'avant et vers la gauche (prise)
             else if(y_new-y_old == 2 && x_new-x_old == -2) {
-                if(((game->board[y_old+1][x_old-1]) == WHITE_PAWN) || (((game->board[y_old+1][x_old-1]) == WHITE_QUEEN))) {
+                if(((game->board[x_old-1][y_old+1]) == WHITE_PAWN) || (((game->board[x_old-1][y_old+1]) == WHITE_QUEEN))) {
                     taken->x = x_old-1;
                     taken->y = y_old+1;
                     return(2);
@@ -471,7 +471,7 @@ int is_move_seq_valid(const struct game *game, const struct move_seq *seq, const
             }
             // Déplacement double vers l'arrière et vers la droite (prise)
             else if(y_new-y_old == -2 && x_new-x_old == 2) {
-                if(((game->board[y_old-1][x_old+1]) == WHITE_PAWN) || (((game->board[y_old-1][x_old+1]) == WHITE_QUEEN))) {
+                if(((game->board[x_old+1][y_old-1]) == WHITE_PAWN) || (((game->board[x_old+1][y_old-1]) == WHITE_QUEEN))) {
                     taken->x = x_old+1;
                     taken->y = y_old-1;
                     return(2);
@@ -479,7 +479,7 @@ int is_move_seq_valid(const struct game *game, const struct move_seq *seq, const
             }
             // Déplacement double vers l'arrière et vers la gauche (prise)
             else if(y_new-y_old == -2 && x_new-x_old == -2) {
-                if(((game->board[y_old-1][x_old-1]) == WHITE_PAWN) || (((game->board[y_old-1][x_old-1]) == WHITE_QUEEN))) {
+                if(((game->board[x_old-1][y_old-1]) == WHITE_PAWN) || (((game->board[x_old-1][y_old-1]) == WHITE_QUEEN))) {
                     taken->x = x_old-1;
                     taken->y = y_old-1;
                     return(2);
@@ -509,13 +509,13 @@ int is_move_seq_valid(const struct game *game, const struct move_seq *seq, const
         // Si c'est une dame blanche (on ne parle pas de la glace)
         if(game->cur_player == PLAYER_WHITE) {
                 while(x_cur != x_new && y_cur != y_new) {
-                    if(game->board[y_cur][x_cur] == BLACK_PAWN || game->board[y_cur][x_cur] == BLACK_QUEEN) {
+                    if(game->board[x_cur][y_cur] == BLACK_PAWN || game->board[x_cur][y_cur] == BLACK_QUEEN) {
                         taken->x = x_cur;
                         taken->y = y_cur;
                         return(2);
                     }
                     // On vérifie que la dame ne passe au dessus d'un pion de son équipe
-                    else if(game->board[y_cur][x_cur] == WHITE_PAWN || game->board[y_cur][x_cur] == WHITE_QUEEN) {
+                    else if(game->board[x_cur][y_cur] == WHITE_PAWN || game->board[x_cur][y_cur] == WHITE_QUEEN) {
                         return(0);
                     }
                     else {
@@ -545,35 +545,35 @@ int is_move_seq_valid(const struct game *game, const struct move_seq *seq, const
         // Si c'est une dame noire
         else {
             while(x_cur != x_new && y_cur != y_new) {
-                if(game->board[y_cur][x_cur] == WHITE_PAWN || game->board[y_cur][x_cur] == WHITE_QUEEN) {
+                if(game->board[x_cur][y_cur] == WHITE_PAWN || game->board[x_cur][y_cur] == WHITE_QUEEN) {
                     taken->x = x_cur;
                     taken->y = y_cur;
                     return(2);
                 }
                 // On vérifie que la dame ne passe pas au dessus d'un pion de son équipe
-                else if(game->board[y_cur][x_cur] == BLACK_PAWN || game->board[y_cur][x_cur] == BLACK_QUEEN) {
+                else if(game->board[x_cur][y_cur] == BLACK_PAWN || game->board[x_cur][y_cur] == BLACK_QUEEN) {
                     return(0);
                 }
                 else {
                     // Déplacement vers le haut et vers la droite
                     if((x_new-x_old) > 0 && (y_new-y_old) < 0) {
                         x_cur++;
-                        y_cur--;
+                        y_cur++;
                     }
                     // Déplacement vers le bas et vers la droite
                     else if((x_new-x_old) > 0 && (y_new-y_old > 0)) {
                         x_cur++;
-                        y_cur++;
+                        y_cur--;
                     }
                     // Déplacement vers le haut et vers la gauche
                     else if((x_new-x_old) < 0 && (y_new-y_old) < 0) {
                         x_cur--;
-                        y_cur--;
+                        y_cur++;
                     }
                     // Déplacement vers le bas et vers la gauche
                     else {
                         x_cur--;
-                        y_cur++;
+                        y_cur--;
                     }
                 }
             }
@@ -596,281 +596,11 @@ int undo_moves(struct game *game, int n) {
         	int oldy = popped->c_old.y;
         	int newx = popped->c_new.x;
         	int newy = popped->c_new.y;
-			game->board[oldy][oldx] = popped->old_orig;
-        	game->board[newy][newx] = EMPTY_CASE;
-			game->board[popped->piece_taken.y][popped->piece_taken.x] = popped->piece_value;
+			game->board[oldx][oldy] = popped->old_orig;
+        	game->board[newx][newy] = EMPTY_CASE;
+			game->board[popped->piece_taken.x][popped->piece_taken.y] = popped->piece_value;
 			popped = popped->next;
 		}
 	}
 	return(EXIT_SUCCESS);
 }
-
-/*
-    Je vire le main car sinon on ne peut pas tester programme.c et test.c.
-*/
-
-//int main(int argc, char *argv[]) {
-	//PREMIERS TESTS EFFECTUES
-
-    /*struct game *state = new_game(10,10);
-	state->moves = NULL;
-
-	struct coord c_old1 = {3,6};
-    struct coord c_new1= {4,5};
-    struct move_seq move_seq1;
-    move_seq1.c_new = c_new1;
-    move_seq1.c_old = c_old1;
-    move_seq1.next = NULL;
-    struct move mouvement1 = {NULL, &move_seq1};
-
-	struct coord c_old2 = {4,3};
-    struct coord c_new2= {5,4};
-    struct move_seq move_seq2;
-    move_seq2.c_new = c_new2;
-    move_seq2.c_old = c_old2;
-    move_seq2.next = NULL;
-    struct move mouvement2 = {NULL, &move_seq2};
-
-
-    struct coord c_old4 = {5,4};
-    struct coord c_new4= {3,6};
-    struct move_seq move_seq4;
-    move_seq4.c_new = c_new4;
-    move_seq4.c_old = c_old4;
-    move_seq4.next = NULL;
-    struct move mouvement4 = {NULL, &move_seq4};
-
-
-    struct coord c_old3 = {5,6};
-    struct coord c_new3= {6,5};
-    struct move_seq move_seq3;
-    move_seq3.c_new = c_new3;
-    move_seq3.c_old = c_old3;
-    move_seq3.next = &move_seq4;
-    struct move mouvement3 = {NULL, &move_seq3};
-
-	printf("\nadresse de moves : %p.\n",state->moves);
-	//printf("adresse de move_seq : %p.\n\n",state->moves->seq);
-
-	push(state,&mouvement1);
-	printf("push.\n");
-	printf("adresse de moves : %p.\n",state->moves);
-	printf("adresse de move_seq : %p.\n",state->moves->seq);
-	printf("contenu de move_seq :\nc_old : (%d,%d)\nc_new : (%d,%d)\n\n",state->moves->seq->c_old.x,state->moves->seq->c_old.y,state->moves->seq->c_new.x,state->moves->seq->c_new.y);
-
-	push(state,&mouvement2);
-	printf("push2 (un deuxieme move contenant une sequence).\n");
-	printf("adresse de moves : %p.\n",state->moves);
-	printf("adresse de move_seq : %p.\n",state->moves->seq);
-	printf("contenu de move_seq :\nc_old : (%d,%d)\nc_new : (%d,%d)\n",state->moves->seq->c_old.x,state->moves->seq->c_old.y,state->moves->seq->c_new.x,state->moves->seq->c_new.y);
-	printf("adresse de moves->next : %p.\n",state->moves->next);
-	printf("adresse de moves->next->move_seq : %p.\n",state->moves->next->seq);
-	printf("contenu de moves->next->move_seq :\nc_old : (%d,%d)\nc_new : (%d,%d)\n\n",state->moves->next->seq->c_old.x,state->moves->next->seq->c_old.y,state->moves->next->seq->c_new.x,state->moves->next->seq->c_new.y);
-
-	push(state,&mouvement3);
-	printf("push3 (un move contenant 2 sequences).\n");
-	printf("adresse de moves : %p.\n",state->moves);
-	printf("adresse de move_seq : %p.\n",state->moves->seq);
-	printf("contenu de move_seq :\nc_old : (%d,%d)\nc_new : (%d,%d)\n",state->moves->seq->c_old.x,state->moves->seq->c_old.y,state->moves->seq->c_new.x,state->moves->seq->c_new.y);
-	printf("adresse de move_seq->next : %p.\n",state->moves->seq->next);
-	printf("contenu de move_seq->next :\nc_old : (%d,%d)\nc_new : (%d,%d)\n",state->moves->seq->next->c_old.x,state->moves->seq->next->c_old.y,state->moves->seq->next->c_new.x,state->moves->seq->next->c_new.y);
-	printf("adresse de moves->next : %p.\n",state->moves->next);
-	printf("adresse de moves->next->move_seq : %p.\n",state->moves->next->seq);
-	printf("contenu de moves->next->move_seq :\nc_old : (%d,%d)\nc_new : (%d,%d)\n\n",state->moves->next->seq->c_old.x,state->moves->next->seq->c_old.y,state->moves->next->seq->c_new.x,state->moves->next->seq->c_new.y);
-
-	struct move *removed;
-	removed = pop(&(state->moves));
-	printf("pop.\n");
-	printf("contenu de removed->seq :\nc_old : (%d,%d)\nc_new : (%d,%d)\n\n",removed->seq->c_old.x,removed->seq->c_old.y,removed->seq->c_new.x,removed->seq->c_new.y);
-	printf("contenu de removed->seq->next :\nc_old : (%d,%d)\nc_new : (%d,%d)\n\n",removed->seq->next->c_old.x,removed->seq->next->c_old.y,removed->seq->next->c_new.x,removed->seq->next->c_new.y);
-	printf("contenu de move_seq :\nc_old : (%d,%d)\nc_new : (%d,%d)\n\n",state->moves->seq->c_old.x,state->moves->seq->c_old.y,state->moves->seq->c_new.x,state->moves->seq->c_new.y);
-
-	pop(&(state->moves));
-printf("OK\n");
-	pop(&(state->moves));
-printf("OK\n");
-	printf("tout popped ; adresse de moves : %p.\n\n",state->moves);
-//---------------------------------------------------------------------
-
-
-	struct coord c_old5 = {4,3};
-    struct coord c_new5= {5,4};
-    struct move_seq move_seq5;
-    move_seq5.c_new = c_new5;
-    move_seq5.c_old = c_old5;
-    move_seq5.next = NULL;
-    struct move mouvement5 = {NULL, &move_seq5};
-
-
-    struct coord c_old6 = {5,4};
-    struct coord c_new6= {3,6};
-    struct move_seq move_seq6;
-    move_seq6.c_new = c_new6;
-    move_seq6.c_old = c_old6;
-    move_seq6.next = NULL;
-    struct move mouvement6 = {NULL, &move_seq6};
-
-
-    struct coord c_old7 = {5,6};
-    struct coord c_new7= {6,5};
-    struct move_seq move_seq7;
-    move_seq7.c_new = c_new7;
-    move_seq7.c_old = c_old7;
-    move_seq7.next = &move_seq6;
-    struct move mouvement7 = {NULL, &move_seq7};
-
-	printf("recommencer avec apply_moves.\n\n");
-
-	printf("adresse de moves : %p.\n",state->moves);
-	//printf("adresse de move_seq : %p.\n\n",state->moves->seq);
-
-	int apply1 = apply_moves(state, &mouvement1);
-	printf("apply1.\n");
-	printf("resultat de apply1 : %d\n",apply1);
-	printf("adresse de moves : %p.\n",state->moves);
-	printf("adresse de move_seq : %p.\n",state->moves->seq);
-	printf("contenu de move_seq :\nc_old : (%d,%d)\nc_new : (%d,%d)\n\n",state->moves->seq->c_old.x,state->moves->seq->c_old.y,state->moves->seq->c_new.x,state->moves->seq->c_new.y);
-    printf("tests de prise\n");
-    printf("contenu de taken : (%d,%d).\n",state->moves->seq->piece_taken.x,state->moves->seq->piece_taken.y);
-    printf("contenu old_orig : %d.\n", state->moves->seq->old_orig);
-    printf("contenu de piece_value (vu les tests : peut etre n'importe quoi) : %d.\n\n", state->moves->seq->piece_value);
-
-	//BOUCLE INFINIE A PARTIR D'ICI
-
-	printf("movement2->next : %p\n",mouvement2.next);
-	printf("movement2->next->next : %p\n",mouvement2.next->next); //result : (nil)
-	printf("%p\n",mouvement5.next);
-	int apply2 = apply_moves(state, &mouvement5);
-	printf("apply2.\n");
-	printf("apply2 (un deuxieme move contenant une sequence).\n");
-	printf("adresse de moves : %p.\n",state->moves);
-	printf("adresse de move_seq : %p.\n",state->moves->seq);
-	printf("contenu de move_seq :\nc_old : (%d,%d)\nc_new : (%d,%d)\n",state->moves->seq->c_old.x,state->moves->seq->c_old.y,state->moves->seq->c_new.x,state->moves->seq->c_new.y);
-	printf("adresse de moves->next : %p.\n",state->moves->next);
-	printf("adresse de moves->next->move_seq : %p.\n",state->moves->next->seq);
-	printf("contenu de moves->next->move_seq :\nc_old : (%d,%d)\nc_new : (%d,%d)\n\n",state->moves->next->seq->c_old.x,state->moves->next->seq->c_old.y,state->moves->next->seq->c_new.x,state->moves->next->seq->c_new.y);
-    printf("tests de prise\n");
-    printf("contenu de taken : (%d,%d).\n",state->moves->seq->piece_taken.x,state->moves->seq->piece_taken.y);
-    printf("contenu old_orig : %d.\n", state->moves->seq->old_orig);
-    printf("contenu de piece_value (vu les tests : peut etre n'importe quoi) : %d.\n\n", state->moves->seq->piece_value);
-
-	apply_moves(state,&mouvement7);
-	printf("apply3 (un move contenant 2 sequences).\n");
-	printf("adresse de moves : %p.\n",state->moves);
-	printf("adresse de move_seq : %p.\n",state->moves->seq);
-	printf("contenu de move_seq :\nc_old : (%d,%d)\nc_new : (%d,%d)\n",state->moves->seq->c_old.x,state->moves->seq->c_old.y,state->moves->seq->c_new.x,state->moves->seq->c_new.y);
-	printf("adresse de move_seq->next : %p.\n",state->moves->seq->next);
-	printf("contenu de move_seq->next :\nc_old : (%d,%d)\nc_new : (%d,%d)\n",state->moves->seq->next->c_old.x,state->moves->seq->next->c_old.y,state->moves->seq->next->c_new.x,state->moves->seq->next->c_new.y);
-	printf("adresse de moves->next : %p.\n",state->moves->next);
-	printf("adresse de moves->next->move_seq : %p.\n",state->moves->next->seq);
-	printf("contenu de moves->next->move_seq :\nc_old : (%d,%d)\nc_new : (%d,%d)\n\n",state->moves->next->seq->c_old.x,state->moves->next->seq->c_old.y,state->moves->next->seq->c_new.x,state->moves->next->seq->c_new.y);
-    printf("tests de prise\n");
-    printf("contenu de taken : (%d,%d).\n",state->moves->seq->piece_taken.x,state->moves->seq->piece_taken.y);
-    printf("contenu old_orig : %d.\n", state->moves->seq->old_orig);
-    printf("contenu de piece_value (vu les tests : peut etre n'importe quoi) : %d.\n\n", state->moves->seq->piece_value);
-    printf("tests de prise precedente\n");
-    printf("contenu de next->taken : (%d,%d).\n",state->moves->next->seq->piece_taken.x,state->moves->seq->piece_taken.y);
-    printf("contenu next->old_orig : %d.\n", state->moves->next->seq->old_orig);
-    printf("contenu de next->piece_value (vu les tests : peut etre n'importe quoi) : %d.\n\n", state->moves->next->seq->piece_value);
-    printf("tests de prise de la sequence precedente\n");
-    printf("contenu de seq->next->taken : (%d,%d).\n",state->moves->seq->next->piece_taken.x,state->moves->seq->piece_taken.y);
-    printf("contenu seq->next->old_orig : %d.\n", state->moves->seq->next->old_orig);
-    printf("contenu de seq->next->piece_value (vu les tests : peut etre n'importe quoi) : %d.\n\n", state->moves->seq->next->piece_value);
-
-	struct move *removed2;
-	removed2 = pop(&(state->moves));
-	printf("pop.\n");
-	printf("contenu de removed2->seq :\nc_old : (%d,%d)\nc_new : (%d,%d)\n\n",removed2->seq->c_old.x,removed2->seq->c_old.y,removed2->seq->c_new.x,removed2->seq->c_new.y);
-	printf("contenu de removed2->seq->next :\nc_old : (%d,%d)\nc_new : (%d,%d)\n\n",removed2->seq->next->c_old.x,removed2->seq->next->c_old.y,removed2->seq->next->c_new.x,removed2->seq->next->c_new.y);
-	printf("contenu de move_seq :\nc_old : (%d,%d)\nc_new : (%d,%d)\n\n",state->moves->seq->c_old.x,state->moves->seq->c_old.y,state->moves->seq->c_new.x,state->moves->seq->c_new.y);
-
-	pop(&(state->moves));
-	pop(&(state->moves));
-	printf("tout popped ; adresse de moves : %p.\n\n",state->moves);
-
-	printf("TOUS LES TESTS SE SONT TERMINES AVEC SUCCES\n");*/
-
-
-    //second tests
-
-//    struct game *state = new_game(10,10);
-//    printf("C'est au tour du joueur %d.\n", state->cur_player);
-//    print_board(state);
-//    printf("\n\n\n");
-//
-//    /*
-//        Mouvement 4
-//    */
-//    struct coord c_old4 = {5,4};
-//    struct coord c_new4= {3,6};
-//    struct move_seq move_seq4;
-//    move_seq4.c_new = c_new4;
-//    move_seq4.c_old = c_old4;
-//    move_seq4.next = NULL;
-//    struct move mouvement4 = {NULL, &move_seq4};
-//
-//    /*
-//        Mouvement 3
-//    */
-//    struct coord c_old3 = {5,6};
-//    struct coord c_new3= {6,5};
-//    struct move_seq move_seq3;
-//    move_seq3.c_new = c_new3;
-//    move_seq3.c_old = c_old3;
-//    move_seq3.next = NULL;
-//    struct move mouvement3 = {&mouvement4, &move_seq3};
-//
-//    /*
-//        Mouvement 2
-//    */
-//    struct coord c_old2 = {4,3};
-//    struct coord c_new2= {5,4};
-//    struct move_seq move_seq2;
-//    move_seq2.c_new = c_new2;
-//    move_seq2.c_old = c_old2;
-//    move_seq2.next = NULL;
-//    struct move mouvement2 = {&mouvement3, &move_seq2};
-//
-//    /*
-//        Mouvement 1
-//    */
-//    struct coord c_old1 = {3,6};
-//    struct coord c_new1= {4,5};
-//    struct move_seq move_seq1;
-//    move_seq1.c_new = c_new1;
-//    move_seq1.c_old = c_old1;
-//    move_seq1.next = NULL;
-//    struct move mouvement1 = {&mouvement2, &move_seq1};
-//    int apply_moves_result1 = apply_moves(state, &mouvement1);
-//    print_board(state);
-//    printf("\n");
-//
-//    /*
-//        Affichons game->move pour voir ce que ça dit
-//    */
-//    printf("Adresse du premier mouvement : %p.\n", state->moves);
-//    printf("Adresse de la première séquence du premier mouvement : %p.\n", state->moves->seq);
-//    printf("Déplacement de (%d,%d) à (%d,%d).\n", state->moves->seq->c_old.x, state->moves->seq->c_old.y, state->moves->seq->c_new.x, state->moves->seq->c_new.y);
-//    printf("Adresse de la deuxième séquence du premier mouvement : %p.\n", state->moves->seq->next);
-//
-//    printf("tests sur la prise\n");
-//    printf("adresse de moves->next : %p.\n",state->moves->next);
-//	printf("adresse de moves->next->move_seq : %p.\n",state->moves->next->seq);
-//	printf("contenu de moves->next->move_seq :\nc_old : (%d,%d)\nc_new : (%d,%d)\n\n",state->moves->next->seq->c_old.x,state->moves->next->seq->c_old.y,state->moves->next->seq->c_new.x,state->moves->next->seq->c_new.y);
-//    printf("contenu de taken : (%d,%d).\n",state->moves->seq->piece_taken.x,state->moves->seq->piece_taken.y);
-//    printf("contenu old_orig : %d.\n", state->moves->seq->old_orig);
-//    printf("contenu de piece_value (vu les tests : peut etre n'importe quoi) : %d.\n\n", state->moves->seq->piece_value);
-//    printf("tests de prise precedente\n");
-//    printf("contenu de next->taken : (%d,%d).\n",state->moves->next->seq->piece_taken.x,state->moves->next->seq->piece_taken.y);
-//    printf("contenu next->old_orig : %d.\n", state->moves->next->seq->old_orig);
-//    printf("contenu de next->piece_value (vu les tests : peut etre n'importe quoi) : %d.\n\n", state->moves->next->seq->piece_value);
-//
-//    printf("test pop\n");
-//    struct move_seq *pop1 = pop(&(state->moves));
-//    printf("Adresse de l'avant-dernier mouvement : %p.\n", state->moves);
-//
-//    // NOTE : la dernière ligne retourne (nil). ça prouve selon moi qu'il y a un problème avec
-//    // les fonctions push/pop.
-//
-//    free_game(state);
-//}

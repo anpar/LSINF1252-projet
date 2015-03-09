@@ -195,7 +195,7 @@ void test_is_move_seq_valid(void) {
     CU_ASSERT(taken->y == -1);
 
     // Cas #5 : mouvement non-valide car destination non-vide. Pour ce test, on modifie le plateau.
-    game->board[5][4] = BLACK_PAWN;
+    game->board[4][5] = BLACK_PAWN;
     struct coord c_old_5 = {3,6};
     struct coord c_new_5 = {4,5};
     seq->c_new = c_new_5;
@@ -245,8 +245,7 @@ void test_is_move_seq_valid(void) {
     CU_ASSERT(taken->x == -1);
     CU_ASSERT(taken->y == -1);
 
-    // Cas #10 : mouvement valide d'un blanc vers l'avant/droite avec prise d'un pion
-    print_board(game);
+    // Cas #10 : mouvement valide d'un blanc vers l'avant/droite avec prise d'un pion noir
     struct coord c_old_10 = {3,6};
     struct coord c_new_10 = {5,4};
     seq->c_new = c_new_10;
@@ -255,6 +254,54 @@ void test_is_move_seq_valid(void) {
     CU_ASSERT(is_move_seq_valid(game, seq, NULL, taken) == 2);
     CU_ASSERT(taken->x == 4);
     CU_ASSERT(taken->y == 5);
+
+    // Cas #11 : mouvement valide d'un blanc vers l'avant/gauche avec prise d'un pion noir
+    struct coord c_old_11 = {5,6};
+    struct coord c_new_11 = {3,4};
+    seq->c_new = c_new_11;
+    seq->c_old = c_old_11;
+
+    CU_ASSERT(is_move_seq_valid(game, seq, NULL, taken) == 2);
+    CU_ASSERT(taken->x == 4);
+    CU_ASSERT(taken->y == 5);
+
+    // Cas #12 : mouvement valide d'un blanc vers l'arrière/gauche avec prise d'un pion noir
+    game->board[3][6] = EMPTY_CASE;
+    game->board[5][4] = WHITE_PAWN;
+
+    struct coord c_old_12 = {5,4};
+    struct coord c_new_12 = {3,6};
+    seq->c_new = c_new_12;
+    seq->c_old = c_old_12;
+
+    CU_ASSERT(is_move_seq_valid(game, seq, NULL, taken) == 2);
+    CU_ASSERT(taken->x == 4);
+    CU_ASSERT(taken->y == 5)
+
+    // Cas #13 : mouvement valide d'un pion blanc vers l'arrière/droite avec prise d'un noir
+    game->board[5][6] = EMPTY_CASE;
+    game->board[3][4] = WHITE_PAWN;
+
+    struct coord c_old_13 = {3,4};
+    struct coord c_new_13 = {5,6};
+    seq->c_new = c_new_13;
+    seq->c_old = c_old_13;
+
+    CU_ASSERT(is_move_seq_valid(game, seq, NULL, taken) == 2);
+    CU_ASSERT(taken->x == 4);
+    CU_ASSERT(taken->y == 5)
+
+    // Cas #14 : mouvement valide d'un pion blanc essayant de passer au dessus d'un autre pion blanc
+    game->board[4][5] = WHITE_PAWN;
+
+    struct coord c_old_14 = {3,4};
+    struct coord c_new_14 = {5,6};
+    seq->c_new = c_new_14;
+    seq->c_old = c_old_14;
+
+    CU_ASSERT(is_move_seq_valid(game, seq, NULL, taken) == 0);
+    CU_ASSERT(taken->x == -1);
+    CU_ASSERT(taken->y == -1)
 
     free(seq);
     free(taken);
