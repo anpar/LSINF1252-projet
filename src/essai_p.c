@@ -109,6 +109,10 @@ int apply_moves(struct game *game, const struct move *moves) {
     while(runner != NULL) {
         struct coord *taken = (struct coord *) malloc(sizeof(struct coord));
         int validity = is_move_seq_valid(game, seq_runner, previous, taken);
+        int taken_piece;
+        if(taken!=NULL) {
+            taken_piece = game->board[taken->y][taken->x];
+        }
 
         // mouvement invalide
         if(validity == 0) {
@@ -116,11 +120,14 @@ int apply_moves(struct game *game, const struct move *moves) {
         }
         // mouvement valide
         else {
+            
             int oldx = seq_runner->c_old.x;
             int oldy = seq_runner->c_old.y;
             int newx = seq_runner->c_new.x;
             int newy = seq_runner->c_new.y;
             // reajuste la position de la piece depacee
+
+            seq_runner->old_orig = game->board[oldy][oldx];
 
             game->board[newy][newx] = game->board[oldy][oldx];  
             game->board[oldy][oldx] = EMPTY_CASE;
@@ -157,6 +164,10 @@ int apply_moves(struct game *game, const struct move *moves) {
 				toAdd = (struct move *) malloc(sizeof(struct move));
 				toAdd->seq = runner->seq;
 				toAdd->next = NULL;
+                if(validity==2) {
+                    toAdd->seq->piece_value = taken_piece;
+                    toAdd->seq->piece_taken = *taken;
+                }
                 push(game, toAdd);
                 // passe a l'element suivant de moves
                 runner = runner->next;
@@ -202,7 +213,9 @@ int apply_moves(struct game *game, const struct move *moves) {
 
 int is_move_seq_valid(const struct game *game, const struct move_seq *seq, const struct move_seq *prev, struct coord *taken) {
 
-	return(1); //FACILITE LE TEST, A EFFACER	
+    taken->x = 7;
+    taken->y = 7;
+	return(2); //FACILITE LE TEST, A EFFACER	
 
     // On effectue d'abord tous les tests sur c_old
     struct coord c_old = seq->c_old;
@@ -630,6 +643,10 @@ printf("OK\n");
 	printf("adresse de moves : %p.\n",state->moves);
 	printf("adresse de move_seq : %p.\n",state->moves->seq);
 	printf("contenu de move_seq :\nc_old : (%d,%d)\nc_new : (%d,%d)\n\n",state->moves->seq->c_old.x,state->moves->seq->c_old.y,state->moves->seq->c_new.x,state->moves->seq->c_new.y);
+    printf("tests de prise\n");
+    printf("contenu de taken : (%d,%d).\n",state->moves->seq->piece_taken.x,state->moves->seq->piece_taken.y);
+    printf("contenu old_orig : %d.\n", state->moves->seq->old_orig);
+    printf("contenu de piece_value (vu les tests : peut etre n'importe quoi) : %d.\n\n", state->moves->seq->piece_value);
 
 	//BOUCLE INFINIE A PARTIR D'ICI
 	
@@ -645,6 +662,10 @@ printf("OK\n");
 	printf("adresse de moves->next : %p.\n",state->moves->next);
 	printf("adresse de moves->next->move_seq : %p.\n",state->moves->next->seq);
 	printf("contenu de moves->next->move_seq :\nc_old : (%d,%d)\nc_new : (%d,%d)\n\n",state->moves->next->seq->c_old.x,state->moves->next->seq->c_old.y,state->moves->next->seq->c_new.x,state->moves->next->seq->c_new.y);
+    printf("tests de prise\n");
+    printf("contenu de taken : (%d,%d).\n",state->moves->seq->piece_taken.x,state->moves->seq->piece_taken.y);
+    printf("contenu old_orig : %d.\n", state->moves->seq->old_orig);
+    printf("contenu de piece_value (vu les tests : peut etre n'importe quoi) : %d.\n\n", state->moves->seq->piece_value);
 
 	apply_moves(state,&mouvement7);
 	printf("apply3 (un move contenant 2 sequences).\n");
@@ -656,6 +677,18 @@ printf("OK\n");
 	printf("adresse de moves->next : %p.\n",state->moves->next);
 	printf("adresse de moves->next->move_seq : %p.\n",state->moves->next->seq);
 	printf("contenu de moves->next->move_seq :\nc_old : (%d,%d)\nc_new : (%d,%d)\n\n",state->moves->next->seq->c_old.x,state->moves->next->seq->c_old.y,state->moves->next->seq->c_new.x,state->moves->next->seq->c_new.y);
+    printf("tests de prise\n");
+    printf("contenu de taken : (%d,%d).\n",state->moves->seq->piece_taken.x,state->moves->seq->piece_taken.y);
+    printf("contenu old_orig : %d.\n", state->moves->seq->old_orig);
+    printf("contenu de piece_value (vu les tests : peut etre n'importe quoi) : %d.\n\n", state->moves->seq->piece_value);
+    printf("tests de prise precedente\n");
+    printf("contenu de next->taken : (%d,%d).\n",state->moves->next->seq->piece_taken.x,state->moves->seq->piece_taken.y);
+    printf("contenu next->old_orig : %d.\n", state->moves->next->seq->old_orig);
+    printf("contenu de next->piece_value (vu les tests : peut etre n'importe quoi) : %d.\n\n", state->moves->next->seq->piece_value);
+    printf("tests de prise de la sequence precedente\n");
+    printf("contenu de seq->next->taken : (%d,%d).\n",state->moves->seq->next->piece_taken.x,state->moves->seq->piece_taken.y);
+    printf("contenu seq->next->old_orig : %d.\n", state->moves->seq->next->old_orig);
+    printf("contenu de seq->next->piece_value (vu les tests : peut etre n'importe quoi) : %d.\n\n", state->moves->seq->next->piece_value);
 
 	struct move *removed2;
 	removed2 = pop(&(state->moves));
