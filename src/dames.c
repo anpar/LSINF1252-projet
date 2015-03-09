@@ -49,15 +49,10 @@ void print_case(int board_case) {
     of moves and returns its value. It frees the element too.
 */
 struct move *pop(struct move **list) {
-    /*struct move *removed=*list; //adresse de list a liberer
-    struct move_seq *value;
-    value = removed->seq;
-    *list=removed->next;
-    free(removed);
-    return(value);*/
+
 	struct move *removed = *list;
 	*list = removed->next;
-	//free(removed);      si on doit free ce qui est popped ?
+	free(removed);    
 	return(removed);
 }
 
@@ -71,23 +66,12 @@ struct move *pop(struct move **list) {
     the list of moves of game.
 */
 int push(struct game *game, struct move *move) {
-    /*struct move *t;
-    t = (struct move *) malloc(sizeof(struct move));
-    if(t == NULL) {
-        return(-1);
-    }
-    else {*/
-		struct move *t;
-		t = move;
-		t->next = game->moves;
-		game->moves = t;
-		//free(t);
-        /*t->seq = move;
-        t->next = game->moves;
-        game->moves = t;
-        free(t);*/
-        return(0);
-    //}
+
+	struct move *t;
+	t = move;
+	t->next = game->moves;
+	game->moves = t;
+	return(0);
 }
 
 /*
