@@ -8,19 +8,6 @@
 #define WHITE_QUEEN 7
 #define EMPTY_CASE 0
 
-/*
- * ===================================================================
- *                         Added functions
- * ===================================================================
- */
-
-/*
- * This function converts the byte reprensenting
- * the case on the board into a char and printf it.
- * - -blank character- is an empty case ;
- * - BP is a black plaw (opposite of WP) ;
- * - BQ is a black queen (opposite of WQ ;
- */
 void print_case(int board_case) {
     if(board_case == BLACK_PAWN) {
         printf("   BP");
@@ -39,32 +26,15 @@ void print_case(int board_case) {
     }
 }
 
-
-/*
-    --------------------
-            pop
-    --------------------
-
-    This function extracts the first element of the linked list
-    of moves and returns its value. It frees the element too.
-*/
 struct move *pop(struct move **list) {
 
 	struct move *removed = *list;
 	*list = removed->next;
-	free(removed);    
+	free(removed);
 	return(removed);
 }
 
 
-/*
-    ---------------------
-            push
-    ---------------------
-
-    This function inserts the move move in
-    the list of moves of game.
-*/
 int push(struct game *game, struct move *move) {
 
 	struct move *t;
@@ -74,16 +44,6 @@ int push(struct game *game, struct move *move) {
 	return(0);
 }
 
-/*
-    ---------------------
-        checkVictory
-    ---------------------
-
-    This function checks if cur_player has won
-    after taking a plaw by counting the number
-    of foe pieces left.
-    Returns 1 if victory, 0 otherwise.
-*/
 int checkVictory(struct game *game) {
     int i,j,v1,v2;
     if(game->cur_player == PLAYER_BLACK) {
@@ -106,21 +66,13 @@ int checkVictory(struct game *game) {
     return (1);
 }
 
-
-/*
- * ===================================================================
- *                       Requested functions
- * ===================================================================
- */
-
 void print_board(const struct game *game) {
     int x,y;
     for(y = 0; y<game->ysize; y++) {
         for(x = 0; x<game->xsize; x++) {
             print_case(game->board[y][x]);
             if(x == game->xsize-1) {
-                // Better to create a function that takes xsize as an argument and produce
-                // a line corresponding to the size of tabulation * xize (but it's a detail)
+                // TODO : faire une fonction qui génère une ligne qui dépend de xsize
                 printf("\n----------------------------------------------------------------------------------\n");
             }
             else {
@@ -308,12 +260,6 @@ int apply_moves(struct game *game, const struct move *moves) {
                 }
 
                 // insere le move parcouru dans game->moves
-                /*  NOTE : ici on insère pas le move mais seulement la séquence, ça me parait
-                    bizarre... C'est pour ça que je pensais changer les fonctions push et pop
-                    car selon moi elles sont sensées push un move complet ou poper un move complet,
-                    et pas des move_seq. D'ailleurs les tests que je fais dans la main prouvent
-                    qu'il y a quelque chose qui ne va pas.
-                */
 				struct move *toAdd;
 				toAdd = (struct move *) malloc(sizeof(struct move));
 				toAdd->seq = runner->seq;
@@ -360,15 +306,6 @@ int apply_moves(struct game *game, const struct move *moves) {
     }
 	return(0);
 }
-
-/*
-    NOTE : je m'étais dis quand une seule fonction c'était faisable
-    de manière assez simple et propre, je n'en suis plus si sur. Je
-    pense qu'il y a moyen de rendre ce code beaucoup plus propre et
-    élégant. @Charles tu en dis quoi?
-    Et aussi, quid de old_orig, piece_taken et piece_value? C'est ici
-    que je suis sensé m'en occuper?
-*/
 
 int is_move_seq_valid(const struct game *game, const struct move_seq *seq, const struct move_seq *prev, struct coord *taken) {
     // On effectue d'abord tous les tests sur c_old
@@ -748,7 +685,7 @@ printf("OK\n");
     printf("contenu de piece_value (vu les tests : peut etre n'importe quoi) : %d.\n\n", state->moves->seq->piece_value);
 
 	//BOUCLE INFINIE A PARTIR D'ICI
-	
+
 	printf("movement2->next : %p\n",mouvement2.next);
 	printf("movement2->next->next : %p\n",mouvement2.next->next); //result : (nil)
 	printf("%p\n",mouvement5.next);
@@ -880,7 +817,7 @@ printf("OK\n");
     printf("test pop\n");
     struct move *pop1 = pop(&(state->moves));
     printf("Adresse de l'avant-dernier mouvement : %p.\n", state->moves);
-    
+
     // NOTE : la dernière ligne retourne (nil). ça prouve selon moi qu'il y a un problème avec
     // les fonctions push/pop.
 

@@ -56,8 +56,6 @@ int main(void) {
     /* add the tests to the suite */
     if ((NULL == CU_add_test(pSuite, "test_new_game", test_new_game)) ||
         (NULL == CU_add_test(pSuite, "test_load_game", test_load_game)) ||
-        (NULL == CU_add_test(pSuite, "test_print_case", test_print_case)) ||
-        (NULL == CU_add_test(pSuite, "test_print_board", test_print_board)) ||
         (NULL == CU_add_test(pSuite, "test_free_game", test_free_game)) ||
         (NULL == CU_add_test(pSuite, "test_is_move_seq_valid", test_is_move_seq_valid))  ||
         (NULL == CU_add_test(pSuite, "test_apply_moves", test_apply_moves)) ||
