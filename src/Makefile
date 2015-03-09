@@ -15,6 +15,9 @@ test: dames.o test.o
 jeu: programme.o dames.o
 	gcc -std=c99 -o programme programme.o dames.o
 
+dames: dames.c
+	gcc -std=c99 -o dames dames.c
+
 clean:
 	rm -rf *.o
 
