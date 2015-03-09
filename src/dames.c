@@ -338,7 +338,7 @@ int apply_moves(struct game *game, const struct move *moves) {
                     toAdd->seq->piece_value = taken_piece;
                     toAdd->seq->piece_taken = *taken;
                 }
-		else {
+				else {
                     toAdd->seq->piece_value = 0;
                     toAdd->seq->piece_taken.x = 0;
                     toAdd->seq->piece_taken.y = 0;
