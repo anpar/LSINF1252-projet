@@ -164,11 +164,11 @@ struct game *new_game(int xsize, int ysize) {
                 game->board[y][x] = EMPTY_CASE;
             }
             // Pions noirs
-            else if (y < 4) {
+            else if (y < ysize/2 - 1) {
                 game->board[y][x] = BLACK_PAWN;
             }
             // Pions blancs
-            else if (y > ysize - 5) {
+            else if (y > ysize/2) {
                 game->board[y][x] = WHITE_PAWN;
             }
             // Cases vides restantes
@@ -276,9 +276,9 @@ int apply_moves(struct game *game, const struct move *moves) {
         // S'il n'y a pas eu de prise mais que le mouvement est valide
         else {
             seq_runner->piece_value = 0;
-            // NOTE : par défaut (0;0), il faudra quand même vérifier que ça fonction bien
-            seq_runner->piece_taken.x = 0;
-            seq_runner->piece_taken.y = 0;
+            // NOTE : finalement on met -1 par défaut
+            seq_runner->piece_taken.x = -1;
+            seq_runner->piece_taken.y = -1;
         }
 
         // Dans tous les cas, on doit quand même upate old_orig
@@ -344,6 +344,10 @@ int is_move_seq_valid(const struct game *game, const struct move_seq *seq, const
     int x_old = c_old.x;
     int y_old = c_old.y;
 
+    // NOTE : on décide de mettre taken à -1 par défaut
+    taken->x = -1;
+    taken->y = -1;
+
     // On vérifie que c_old est bien dans les limites du plateau
     if (x_old > game->xsize-1 || x_old < 0 || y_old > game->ysize-1 || y_old < 0) {
         return(0);
@@ -406,24 +410,25 @@ int is_move_seq_valid(const struct game *game, const struct move_seq *seq, const
             }
             // Déplacement double vers l'avant et vers la droite (prise)
             else if(y_new-y_old == -2 && x_new-x_old == 2) {
+
                 // On vérifie qu'il y bien prise d'un pièce adverse
-                if(((game->board[y_old+1][x_old+1]) == BLACK_PAWN) || (((game->board[y_old+1][x_old+1]) == BLACK_QUEEN))) {
+                if(((game->board[y_old-1][x_old+1]) == BLACK_PAWN) || (((game->board[y_old-1][x_old+1]) == BLACK_QUEEN))) {
                     taken->x = x_old+1;
-                    taken->y = y_old+1;
+                    taken->y = y_old-1;
                     return(2);
                 }
             }
             // Déplacement double vers l'avant et vers la gauche (prise)
             else if(y_new-y_old == -2 && x_new-x_old == -2) {
-                if(((game->board[y_old+1][x_old-1]) == BLACK_PAWN) || (((game->board[y_old+1][x_old-1]) == BLACK_QUEEN))) {
+                if(((game->board[y_old-1][x_old-1]) == BLACK_PAWN) || (((game->board[y_old-1][x_old-1]) == BLACK_QUEEN))) {
                     taken->x = x_old-1;
-                    taken->y = y_old+1;
+                    taken->y = y_old-1;
                     return(2);
                 }
             }
             // Déplacement double vers l'arrière et vers la droite (prise)
             else if(y_new-y_old == 2 && x_new-x_old == 2) {
-                if(((game->board[y_old-1][x_old+1]) == BLACK_PAWN) || (((game->board[y_old-1][x_old+1]) == BLACK_QUEEN))) {
+                if(((game->board[y_old+1][x_old+1]) == BLACK_PAWN) || (((game->board[y_old+1][x_old+1]) == BLACK_QUEEN))) {
                     taken->x = x_old+1;
                     taken->y = y_old-1;
                     return(2);
@@ -431,9 +436,9 @@ int is_move_seq_valid(const struct game *game, const struct move_seq *seq, const
             }
             // Déplacement double vers l'arrière et vers la gauche (prise)
             else if(y_new-y_old == 2 && x_new-x_old == -2) {
-                if(((game->board[y_old-1][x_old-1]) == BLACK_PAWN) || (((game->board[y_old-1][x_old-1]) == BLACK_QUEEN))) {
+                if(((game->board[y_old+1][x_old-1]) == BLACK_PAWN) || (((game->board[y_old+1][x_old-1]) == BLACK_QUEEN))) {
                     taken->x = x_old-1;
-                    taken->y = y_old-1;
+                    taken->y = y_old+1;
                     return(2);
                 }
             }
