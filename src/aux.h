@@ -8,8 +8,8 @@
 */
 
 extern void print_case(int board_case);
-struct move *pop(struct move **list);
-int push(struct game *game, struct move *move);
+struct move_seq *pop(struct move **list);
+int push(struct move **list, struct move_seq *value);
 int checkVictory(struct game *game);
 
 #endif
