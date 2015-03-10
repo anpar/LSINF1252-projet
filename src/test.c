@@ -10,6 +10,8 @@
 #define BLACK_QUEEN 3
 #define WHITE_QUEEN 7
 #define EMPTY_CASE 0
+#define WHITE_PLAYER 1
+#define BLACK_PLAYER 0
 
 /* Test Suite setup and cleanup functions: */
 
@@ -197,6 +199,7 @@ void test_is_move_seq_valid(void) {
     CU_ASSERT(is_move_seq_valid(game, seq, NULL, taken) == 1);
     CU_ASSERT(taken->x == -1);
     CU_ASSERT(taken->y == -1);
+
     // Cas #2 : mouvement non-valide de par sa longueur uniquement.
     struct coord c_old_2 = {3,6};
     struct coord c_new_2 = {5,4};
@@ -392,7 +395,7 @@ void test_is_move_seq_valid(void) {
     game->board[7][6] = BLACK_PAWN;
     game->board[6][5] = WHITE_PAWN;
     game->board[8][5] = WHITE_PAWN;
-    game->cur_player = 0;
+    game->cur_player = BLACK_PLAYER;
 
     struct coord c_old_20 = {7,6};
     struct coord c_new_20 = {9,4};
@@ -446,7 +449,6 @@ void test_is_move_seq_valid(void) {
 
     // Cas #23 : une dame essaye de passer au dessus d'un pion de sa couleur
     game->board[2][7] = WHITE_PAWN;
-    print_board(game);
 
     struct coord c_old_24 = {1,8};
     struct coord c_new_24 = {3,6};
@@ -458,7 +460,7 @@ void test_is_move_seq_valid(void) {
 
     // Cas #24 : une dame noir effectue une rafle
     game = new_empty_game(10,10);
-    game->cur_player = 0;
+    game->cur_player = BLACK_PLAYER;
     game->board[4][7] = BLACK_QUEEN;
     game->board[5][8] = WHITE_QUEEN;
     game->board[5][6] = WHITE_PAWN;
@@ -482,9 +484,8 @@ void test_is_move_seq_valid(void) {
     seq_prev->piece_value = 0;
 
     // Cas #25 : une dame se déplace deux foix d'affilé sans avoir effectuer de prise
-    game->cur_player = 0;
+    game->cur_player = BLACK_PLAYER;
     game->board[5][8] = EMPTY_CASE;
-    print_board(game);
 
     struct coord c_old_28 = {4,7};
     struct coord c_new_28 = {6,5};
@@ -508,7 +509,35 @@ void test_is_move_seq_valid(void) {
 
 void test_apply_moves(void)
 {
+    struct game *game = new_game(10,10);
+    struct move_seq *seq = (struct move_seq *) malloc(sizeof(struct move_seq));
+    struct coord *taken = (struct coord *) malloc(sizeof(struct coord));
+    struct move *move = (struct move *) malloc(sizeof(struct move));
+
     // Cas #1 : avancée simple
+    struct coord c_old_1 = {3,6};
+    struct coord c_new_1 = {4,5};
+
+    seq->c_new = c_new_1;
+    seq->c_old = c_old_1;
+    move->seq = seq;
+
+    CU_ASSERT(apply_moves(game, move) == 0);
+    CU_ASSERT(game->board[3][6] == EMPTY_CASE);
+    CU_ASSERT(game->board[4][5] == WHITE_PAWN);
+    CU_ASSERT(game->cur_player == BLACK_PLAYER);
+    CU_ASSERT(game->moves->seq->old_orig == WHITE_PAWN);
+    CU_ASSERT(game->moves->seq->piece_value == 0);
+    CU_ASSERT(game->moves->seq->piece_taken.x == -1);
+    CU_ASSERT(game->moves->seq->piece_taken.y == -1);
+    CU_ASSERT(game->moves->seq->c_old.x == 3);
+    CU_ASSERT(game->moves->seq->c_old.y == 6);
+    CU_ASSERT(game->moves->seq->c_new.x == 4);
+    CU_ASSERT(game->moves->seq->c_new.y == 5);
+    printf("seq->piece_value : %d.\n", seq->piece_value);
+    printf("seq->piece_taken.x : %d.\n", seq->piece_taken.x);
+    printf("seq->piece_taken.y : %d.\n", seq->piece_taken.y);
+
     // Cas #2 : prise simple
     // Cas #3 : prise double
     // Cas #4 : transformation en dame
