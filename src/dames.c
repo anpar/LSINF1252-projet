@@ -240,14 +240,17 @@ void free_game(struct game *game) {
 
 int apply_moves(struct game *game, const struct move *moves) {
     // parcourt la liste de moves (avec un typecast pour supprimer une warning à cause du const)
-    struct move *runner = (struct move *) malloc(sizeof(struct move));
-    *runner = *moves;
+    struct move *runner = (struct move *) moves; // (struct move *) malloc(sizeof(struct move));
+    //*runner = *moves;
     // parcourt la sequence dans un move
-    struct move_seq *seq_runner = (struct move_seq *) malloc(sizeof(struct move_seq));
+    struct move_seq *seq_runner; // = (struct move_seq *) malloc(sizeof(struct move_seq));
     if(runner != NULL) {
-        *seq_runner = *runner->seq;;
+        seq_runner = runner->seq;;
+        //*seq_runner = *runner->seq;;
+
     }
-    runner->seq = seq_runner;
+    //runner->seq = seq_runner;
+
     // mouvement precedent d'une sequence, NULL initialement
     struct move_seq *previous = NULL;
 
@@ -366,7 +369,6 @@ int is_move_seq_valid(const struct game *game, const struct move_seq *seq, const
 
     // S'il y a eu un move_seq précédent
     if(prev != NULL) {
-
         struct coord prev_c_new = prev->c_new;
         int prev_x_new = prev_c_new.x;
         int prev_y_new = prev_c_new.y;
@@ -597,7 +599,7 @@ int is_move_seq_valid(const struct game *game, const struct move_seq *seq, const
 int undo_moves(struct game *game, int n) {
     int count = 0;
 	while((game->moves != NULL) && (count < n)) {
-		
+
 		//retire le dernier mouvement effectué
 		struct move_seq *popped;
 		popped = pop(&(game->moves));
@@ -614,7 +616,7 @@ int undo_moves(struct game *game, int n) {
 			{
 				game->board[popped->piece_taken.x][popped->piece_taken.y] = popped->piece_value;
 			}
-			
+
 			popped = popped->next;
 		}
 		//mise a jour du joueur actuel

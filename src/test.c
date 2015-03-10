@@ -505,26 +505,26 @@ void test_is_move_seq_valid(void) {
     free(seq);
     free(seq_prev);
     free(taken);
+    free_game(game);
 }
 
 void test_apply_moves(void)
 {
     struct game *game = new_game(10,10);
-    struct move_seq *seq = (struct move_seq *) malloc(sizeof(struct move_seq));
-    struct coord *taken = (struct coord *) malloc(sizeof(struct coord));
-    struct move *move = (struct move *) malloc(sizeof(struct move));
+    struct move_seq *seq_1 = (struct move_seq *) malloc(sizeof(struct move_seq));
+    struct move_seq *seq_2 = (struct move_seq *) malloc(sizeof(struct move_seq));
+    struct move *move_1 = (struct move *) malloc(sizeof(struct move));
 
     // Cas #1 : avancée simple
     struct coord c_old_1 = {3,6};
     struct coord c_new_1 = {4,5};
+    seq_1->c_new = c_new_1;
+    seq_1->c_old = c_old_1;
+    seq_1->next = NULL;
+    move_1->seq = seq_1;
+    move_1->next = NULL;
 
-    seq->c_new = c_new_1;
-    seq->c_old = c_old_1;
-    move->seq = seq;
-    printf("seq->piece_value : %d.\n", seq->piece_value);
-    printf("seq->piece_taken.x : %d.\n", seq->piece_taken.x);
-    printf("seq->piece_taken.y : %d.\n", seq->piece_taken.y);
-    CU_ASSERT(apply_moves(game, move) == 0);
+    CU_ASSERT(apply_moves(game, move_1) == 0);
     CU_ASSERT(game->board[3][6] == EMPTY_CASE);
     CU_ASSERT(game->board[4][5] == WHITE_PAWN);
     CU_ASSERT(game->cur_player == BLACK_PLAYER);
@@ -536,14 +536,14 @@ void test_apply_moves(void)
     CU_ASSERT(game->moves->seq->c_old.y == 6);
     CU_ASSERT(game->moves->seq->c_new.x == 4);
     CU_ASSERT(game->moves->seq->c_new.y == 5);
-    printf("seq->piece_value : %d.\n", seq->piece_value);
-    printf("seq->piece_taken.x : %d.\n", seq->piece_taken.x);
-    printf("seq->piece_taken.y : %d.\n", seq->piece_taken.y);
 
     // Cas #2 : prise simple
-    // Cas #3 : prise double
     // Cas #4 : transformation en dame
     // Cas #5 : victoire
+
+    free_game(game);
+    free(seq_1);
+    free(seq_2);
 }
 
 void test_undo_moves(void) {
