@@ -514,6 +514,29 @@ int is_move_seq_valid(const struct game *game, const struct move_seq *seq, const
         // Si c'est une dame blanche (on ne parle pas de la glace)
         if(game->cur_player == PLAYER_WHITE) {
                 while(x_cur != x_new && y_cur != y_new) {
+                    // Déplacement vers le haut et vers la droite
+                    // J'ai déplacer ces conditions car on doit d'abord incrément x_cur et y_cur
+                    // avant de tester la deuxième condition
+                    if((x_new-x_old) > 0 && (y_new-y_old) < 0) {
+                        x_cur++;
+                        y_cur--;
+                    }
+                    // Déplacement vers le bas et vers la droite
+                    else if((x_new-x_old) > 0 && (y_new-y_old > 0)) {
+                        x_cur++;
+                        y_cur++;
+                    }
+                    // Déplacement vers le haut et vers la gauche
+                    else if((x_new-x_old) < 0 && (y_new-y_old) < 0) {
+                        x_cur--;
+                        y_cur--;
+                    }
+                    // Déplacement vers le bas et vers la gauche
+                    else {
+                        x_cur--;
+                        y_cur++;
+                    }
+
                     if(game->board[x_cur][y_cur] == BLACK_PAWN || game->board[x_cur][y_cur] == BLACK_QUEEN) {
                         taken->x = x_cur;
                         taken->y = y_cur;
@@ -523,33 +546,32 @@ int is_move_seq_valid(const struct game *game, const struct move_seq *seq, const
                     else if(game->board[x_cur][y_cur] == WHITE_PAWN || game->board[x_cur][y_cur] == WHITE_QUEEN) {
                         return(0);
                     }
-                    else {
-                        // Déplacement vers le haut et vers la droite
-                        if((x_new-x_old) > 0 && (y_new-y_old) < 0) {
-                            x_cur++;
-                            y_cur--;
-                        }
-                        // Déplacement vers le bas et vers la droite
-                        else if((x_new-x_old) > 0 && (y_new-y_old > 0)) {
-                            x_cur++;
-                            y_cur++;
-                        }
-                        // Déplacement vers le haut et vers la gauche
-                        else if((x_new-x_old) < 0 && (y_new-y_old) < 0) {
-                            x_cur--;
-                            y_cur--;
-                        }
-                        // Déplacement vers le bas et vers la gauche
-                        else {
-                            x_cur--;
-                            y_cur++;
-                        }
-                    }
                 }
             }
         // Si c'est une dame noire
         else {
             while(x_cur != x_new && y_cur != y_new) {
+                // Déplacement vers le haut et vers la droite
+                if((x_new-x_old) > 0 && (y_new-y_old) > 0) {
+                    x_cur++;
+                    y_cur++;
+                }
+                // Déplacement vers le bas et vers la droite
+                else if((x_new-x_old) > 0 && (y_new-y_old < 0)) {
+                    x_cur++;
+                    y_cur--;
+                }
+                // Déplacement vers le haut et vers la gauche
+                else if((x_new-x_old) < 0 && (y_new-y_old) > 0) {
+                    x_cur--;
+                    y_cur++;
+                }
+                // Déplacement vers le bas et vers la gauche
+                else {
+                    x_cur--;
+                    y_cur--;
+                }
+
                 if(game->board[x_cur][y_cur] == WHITE_PAWN || game->board[x_cur][y_cur] == WHITE_QUEEN) {
                     taken->x = x_cur;
                     taken->y = y_cur;
@@ -558,28 +580,6 @@ int is_move_seq_valid(const struct game *game, const struct move_seq *seq, const
                 // On vérifie que la dame ne passe pas au dessus d'un pion de son équipe
                 else if(game->board[x_cur][y_cur] == BLACK_PAWN || game->board[x_cur][y_cur] == BLACK_QUEEN) {
                     return(0);
-                }
-                else {
-                    // Déplacement vers le haut et vers la droite
-                    if((x_new-x_old) > 0 && (y_new-y_old) < 0) {
-                        x_cur++;
-                        y_cur++;
-                    }
-                    // Déplacement vers le bas et vers la droite
-                    else if((x_new-x_old) > 0 && (y_new-y_old > 0)) {
-                        x_cur++;
-                        y_cur--;
-                    }
-                    // Déplacement vers le haut et vers la gauche
-                    else if((x_new-x_old) < 0 && (y_new-y_old) < 0) {
-                        x_cur--;
-                        y_cur++;
-                    }
-                    // Déplacement vers le bas et vers la gauche
-                    else {
-                        x_cur--;
-                        y_cur--;
-                    }
                 }
             }
         }
