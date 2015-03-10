@@ -597,20 +597,36 @@ int is_move_seq_valid(const struct game *game, const struct move_seq *seq, const
 int undo_moves(struct game *game, int n) {
     int count = 0;
 	while((game->moves != NULL) && (count < n)) {
+		
+		//retire le dernier mouvement effectué
 		struct move_seq *popped;
 		popped = pop(&(game->moves));
 		while(popped != NULL) {
-		int oldx = popped->c_old.x;
-        int oldy = popped->c_old.y;
-        int newx = popped->c_new.x;
-        int newy = popped->c_new.y;
-		game->board[oldx][oldy] = popped->old_orig;
-        game->board[newx][newy] = EMPTY_CASE;
-		// NOTE : à faire uniquement si piece_taken.x etc différent de -1, non?
-		game->board[popped->piece_taken.x][popped->piece_taken.y] = popped->piece_value;
-		popped = popped->next;
-		count++;
+		//mise a jour du tableau
+			int oldx = popped->c_old.x;
+        	int oldy = popped->c_old.y;
+        	int newx = popped->c_new.x;
+        	int newy = popped->c_new.y;
+			game->board[oldx][oldy] = popped->old_orig;
+        	game->board[newx][newy] = EMPTY_CASE;
+			//mise a jour d'une piece potentiellement prise
+			if((popped->piece_taken.x != -1) || (popped->piece_taken.y != -1))
+			{
+				game->board[popped->piece_taken.x][popped->piece_taken.y] = popped->piece_value;
+			}
+			
+			popped = popped->next;
 		}
+		//mise a jour du joueur actuel
+		if(game->cur_player == PLAYER_BLACK)
+		{
+			game->cur_player = PLAYER_WHITE;
+		}
+		else
+		{
+			game->cur_player = PLAYER_BLACK;
+		}
+		count++;
 	}
 	return(EXIT_SUCCESS);
 }
