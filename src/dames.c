@@ -256,6 +256,13 @@ int apply_moves(struct game *game, const struct move *moves) {
         struct coord *taken = (struct coord *) malloc(sizeof(struct coord));
         // On vérifie que l'allocation a bien fonctionné
         if(taken == NULL) {
+            return(-1);
+        }
+
+        int validity = is_move_seq_valid(game, seq_runner, previous, taken);
+
+        // Si le mouvement est invalide
+        if(validity == 0) {
 			if(previous != NULL)
 			{
 				//change le cur_player si au moins une séquence a ete enregistrée
@@ -267,14 +274,10 @@ int apply_moves(struct game *game, const struct move *moves) {
 				{
 					game->cur_player = PLAYER_BLACK;
 				}
+				seq_runner = NULL;
+				runner->next = NULL;
+				push(&(game->moves), runner->seq);
 			}
-            return(-1);
-        }
-
-        int validity = is_move_seq_valid(game, seq_runner, previous, taken);
-
-        // Si le mouvement est invalide
-        if(validity == 0) {
             return(-1);
         }
         // S'il y a eu une prise
