@@ -130,95 +130,6 @@ int main(int argc, char *argv[]) {
 		//si on veut effectuer un mouvement
 		else if(action == 'M')
 		{
-/*			//variable définissant si le move est complet 
-			int endOfMove = 0;
-			//variable définissant si c'est la première séquence
-			int first_seq = 0;
-			//enregistre le resultat de apply_move
-			int result;
-
-			//variable contenant la sequence précédente du move à insérer
-			struct move_seq *previous = NULL;
-			//enregistre la premiere séquence de la liste de moves
-			struct move_seq *first = NULL;
-
-			//tant que le move n'est pas complètement défini
-			while(endOfMove == 0) 
-			{
-				char yes_no; 
-				//Définition des coordonnées de déplacement
-				int old_x, old_y, new_x, new_y;
-				printf("Quelle est la coordonée initiale (en largeur) du pion que vous voulez déplacer ?\n");
-				scanf("%d",&old_x);
-				printf("Quelle est la coordonée initiale (en hauteur) du pion que vous voulez déplacer ?\n");
-				scanf("%d",&old_y);
-				printf("Où souhaitez-vous le déposer (en largeur) ?\n");
-				scanf("%d",&new_x);
-				printf("Où souhaitez-vous le déposer (en hauteur) ?\n");
-				scanf("%d",&new_y);
-
-				//Définition de la séquence à insérer
-				struct coord old = {old_x,old_y};
-				struct coord new = {new_x,new_y};
-				struct move_seq seq;
-				seq.c_old = old;
-				seq.c_new = new;
-				seq.next = NULL;
-
-				//enregistre la première séquence pour définir le move plus tard
-				if(first_seq == 0)
-				{
-					first = &seq;
-					first_seq = 1;
-				}
-
-				//enregistre la séquence précédent pour tout lier à la fin
-				if(previous != NULL)
-				{
-					previous->next = &seq;
-printf("OK\n");
-				}
-				previous = &seq;
-
-				printf("Le mouvement est-il fini ? (O/N)\n");
-				scanf("%c",&yes_no);
-				while((yes_no != 'O') && (yes_no != 'N'))
-				{
-					scanf("%c",&yes_no);
-					if((yes_no != 'O') && (yes_no != 'N'))
-					{	printf("Entrée invalide : %c\n", yes_no);
-						printf("Le mouvement est-il fini ? (O/N)\n");
-					}
-				}
-				
-				//si le move est terminé
-				if(yes_no == 'O')
-				{
-					struct move *move = (struct move *) malloc(sizeof(struct move));
-					move->seq = first;
-					move->next = NULL;
-					result = apply_moves(state, (const struct move *) move);
-printf("APPLY DONE : %d\n", result);
-					free(move);
-					endOfMove = 1;
-				}
-
-				//sinon
-				else
-				{
-					printf("Quelle est la suite du mouvement ?\n");
-				}
-			}//fin du while
-			if(result == -1)
-				{
-					printf("Mouvement invalide ou non-réglementaire.\n\n");
-				}
-			else
-				{
-					victoire = result;
-				}
-		printf("Mouvement accompli.\n\n");
-*/
 			//variable définissant si le move est complet 
 			int endOfMove = 0;
 			//enregistre le resultat de apply_move
@@ -284,13 +195,14 @@ printf("APPLY DONE : %d\n", result);
 			}//fin du while
 			if(result == -1)
 				{
-					printf("Mouvement invalide ou non-réglementaire.\n\n");
+					print_board(state);
+					printf("\nMouvement (peut-être partiellement) invalide ou non-réglementaire.\n\n");
 				}
 			else
 				{
 					victoire = result;
+					printf("Mouvement accompli.\n\n");
 				}
-		printf("Mouvement accompli.\n\n");
 		}
 
 		//si on veut annuler un mouvement

@@ -256,6 +256,18 @@ int apply_moves(struct game *game, const struct move *moves) {
         struct coord *taken = (struct coord *) malloc(sizeof(struct coord));
         // On vérifie que l'allocation a bien fonctionné
         if(taken == NULL) {
+			if(previous != NULL)
+			{
+				//change le cur_player si au moins une séquence a ete enregistrée
+				if(game->cur_player == PLAYER_BLACK)
+				{
+					game->cur_player = PLAYER_WHITE;
+				}
+				else
+				{
+					game->cur_player = PLAYER_BLACK;
+				}
+			}
             return(-1);
         }
 
