@@ -207,7 +207,8 @@ int main(int argc, char *argv[]) {
 			else
 				{
 					victoire = result;
-					printf("Mouvement accompli.\n\n");
+					print_board(state);
+					printf("\nMouvement accompli.\n\n");
 				}
 		}
 
