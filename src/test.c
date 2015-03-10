@@ -521,7 +521,9 @@ void test_apply_moves(void)
     seq->c_new = c_new_1;
     seq->c_old = c_old_1;
     move->seq = seq;
-
+    printf("seq->piece_value : %d.\n", seq->piece_value);
+    printf("seq->piece_taken.x : %d.\n", seq->piece_taken.x);
+    printf("seq->piece_taken.y : %d.\n", seq->piece_taken.y);
     CU_ASSERT(apply_moves(game, move) == 0);
     CU_ASSERT(game->board[3][6] == EMPTY_CASE);
     CU_ASSERT(game->board[4][5] == WHITE_PAWN);

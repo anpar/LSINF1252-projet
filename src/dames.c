@@ -240,12 +240,14 @@ void free_game(struct game *game) {
 
 int apply_moves(struct game *game, const struct move *moves) {
     // parcourt la liste de moves (avec un typecast pour supprimer une warning à cause du const)
-    struct move *runner = (struct move *) moves;
+    struct move *runner = (struct move *) malloc(sizeof(struct move));
+    *runner = *moves;
     // parcourt la sequence dans un move
-    struct move_seq *seq_runner;
+    struct move_seq *seq_runner = (struct move_seq *) malloc(sizeof(struct move_seq));
     if(runner != NULL) {
-        seq_runner = runner->seq;
+        *seq_runner = *runner->seq;;
     }
+    runner->seq = seq_runner;
     // mouvement precedent d'une sequence, NULL initialement
     struct move_seq *previous = NULL;
 
@@ -334,6 +336,7 @@ int apply_moves(struct game *game, const struct move *moves) {
         free(taken);
         taken = NULL;
     }
+
 	return(0);
 }
 
