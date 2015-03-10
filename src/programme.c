@@ -305,11 +305,9 @@ printf("APPLY DONE : %d\n", result);
 				printf("Combien de mouvements voulez-vous annuler ? (max 50)\n");
 			    scanf("%d",&undo_qtty);
 			}
-printf("undo reached, undo_qtty : %d\n\n", undo_qtty);
-printf("adresse de game->moves (!= NULL si au moins un move effectué) : %p\n\n", state->moves);
 			undo_moves(state, undo_qtty);
             print_board(state);
-            printf("\nTableau corrigé.\n\n");
+            printf("\nTableau corrigé.\n");
 
 		}
 	printf("Au tour du joueur %d (1 = blanc, 0 = noir).\n Que voulez-vous faire ?\n Tapez :\n",state->cur_player);
