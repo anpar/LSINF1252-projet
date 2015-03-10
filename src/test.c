@@ -324,7 +324,7 @@ void test_is_move_seq_valid(void) {
     CU_ASSERT(taken->x == 4);
     CU_ASSERT(taken->y == 5)
 
-    // Cas #14 : mouvement valide d'un pion blanc essayant de passer au dessus d'un autre pion blanc
+    // Cas #14 : mouvement invalide d'un pion blanc essayant de passer au dessus d'un autre pion blanc
     game->board[4][5] = WHITE_PAWN;
 
     struct coord c_old_14 = {3,4};
@@ -390,10 +390,8 @@ void test_is_move_seq_valid(void) {
     // et des y croissants.
     game = new_empty_game(10,10);
     game->board[7][6] = BLACK_PAWN;
-    //game->board[5][4] = BLACK_PAWN;
     game->board[6][5] = WHITE_PAWN;
     game->board[8][5] = WHITE_PAWN;
-    //game->board[0][9] = WHITE_PAWN;
     game->cur_player = 0;
 
     struct coord c_old_20 = {7,6};
@@ -411,9 +409,97 @@ void test_is_move_seq_valid(void) {
     CU_ASSERT(is_move_seq_valid(game, seq, seq_prev, taken) == 2);
     CU_ASSERT(taken->x == 8);
     CU_ASSERT(taken->y == 5)
-    //struct move test = {NULL, seq_prev};
-    //CU_ASSERT(apply_moves(game, &test) == 0);
-    //print_board(game);
+
+    seq_prev->piece_value = 0;
+
+    // Cas #20 : deplacement valide d'une dame à son tour de jeu.
+    game = new_empty_game(10,10);
+    game->board[1][8] = WHITE_QUEEN;
+
+    struct coord c_old_21 = {1,8};
+    struct coord c_new_21 = {5,4};
+    seq->c_new = c_new_21;
+    seq->c_old = c_old_21;
+    CU_ASSERT(is_move_seq_valid(game, seq, NULL, taken) == 1);
+    CU_ASSERT(taken->x == -1);
+    CU_ASSERT(taken->y == -1);
+
+    // Cas #21 : prise d'un adversaire (une dame noire) par une dame avec arret immédiat après le pion
+    game->board[2][7] = BLACK_QUEEN;
+
+    struct coord c_old_22 = {1,8};
+    struct coord c_new_22 = {3,6};
+    seq->c_new = c_new_22;
+    seq->c_old = c_old_22;
+    CU_ASSERT(is_move_seq_valid(game, seq, NULL, taken) == 2);
+    CU_ASSERT(taken->x == 2);
+    CU_ASSERT(taken->y == 7);
+
+    // Cas #22 : prise d'un adversaire (une dame noire) par une dame avec arret plus loin
+    struct coord c_old_23 = {1,8};
+    struct coord c_new_23 = {5,4};
+    seq->c_new = c_new_23;
+    seq->c_old = c_old_23;
+    CU_ASSERT(is_move_seq_valid(game, seq, NULL, taken) == 2);
+    CU_ASSERT(taken->x == 2);
+    CU_ASSERT(taken->y == 7);
+
+    // Cas #23 : une dame essaye de passer au dessus d'un pion de sa couleur
+    game->board[2][7] = WHITE_PAWN;
+    print_board(game);
+
+    struct coord c_old_24 = {1,8};
+    struct coord c_new_24 = {3,6};
+    seq->c_new = c_new_24;
+    seq->c_old = c_old_24;
+    CU_ASSERT(is_move_seq_valid(game, seq, NULL, taken) == 0);
+    CU_ASSERT(taken->x == -1);
+    CU_ASSERT(taken->y == -1);
+
+    // Cas #24 : une dame noir effectue une rafle
+    game = new_empty_game(10,10);
+    game->cur_player = 0;
+    game->board[4][7] = BLACK_QUEEN;
+    game->board[5][8] = WHITE_QUEEN;
+    game->board[5][6] = WHITE_PAWN;
+
+    struct coord c_old_26 = {4,7};
+    struct coord c_new_26 = {6,5};
+    seq->c_new = c_new_26;
+    seq->c_old = c_old_26;
+
+    struct coord c_old_25= {6,9};
+    struct coord c_new_25 = {4,7};
+    seq_prev->c_new = c_new_25;
+    seq_prev->c_old = c_old_25;
+    seq_prev->next = seq;
+    seq_prev->piece_value = WHITE_QUEEN;
+
+    CU_ASSERT(is_move_seq_valid(game, seq, seq_prev, taken) == 2);
+    CU_ASSERT(taken->x == 5);
+    CU_ASSERT(taken->y == 6)
+
+    seq_prev->piece_value = 0;
+
+    // Cas #25 : une dame se déplace deux foix d'affilé sans avoir effectuer de prise
+    game->cur_player = 0;
+    game->board[5][8] = EMPTY_CASE;
+    print_board(game);
+
+    struct coord c_old_28 = {4,7};
+    struct coord c_new_28 = {6,5};
+    seq->c_new = c_new_28;
+    seq->c_old = c_old_28;
+
+    struct coord c_old_27= {6,9};
+    struct coord c_new_27 = {4,7};
+    seq_prev->c_new = c_new_27;
+    seq_prev->c_old = c_old_27;
+    seq_prev->next = seq;
+
+    CU_ASSERT(is_move_seq_valid(game, seq, seq_prev, taken) == 0);
+    CU_ASSERT(taken->x == -1);
+    CU_ASSERT(taken->y == -1);
 
     free(seq);
     free(seq_prev);
