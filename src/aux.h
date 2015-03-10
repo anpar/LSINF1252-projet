@@ -11,5 +11,6 @@ extern void print_case(int board_case);
 struct move_seq *pop(struct move **list);
 int push(struct move **list, struct move_seq *value);
 int checkVictory(struct game *game);
+extern void reverse(struct move_seq **list);
 
 #endif

@@ -109,6 +109,25 @@ int check_victory(struct game *game) {
 }
 
 /*
+	reverse retourne la liste de move_seq
+*/
+void reverse(struct move_seq **list) {
+   struct move_seq *runner, *reversed, *trace; //runner parcourt la liste, 
+                                           //tandis que reversed enregistre la liste inversee
+                                           //et que trace retient reversed a chaque etape
+   runner = *list;
+   reversed = NULL;
+   while(runner != NULL) {
+      trace = reversed;  //trace enregistre la liste inversee intermediaire
+      reversed = runner;  //reversed enregistre l'element suivant
+      runner = runner->next;  //runner avance dans la liste
+      reversed->next = trace;  //reversed complete l'element acquis avec 
+                               //la liste inversee intermediaire
+   } 
+   *list = reversed;
+}
+
+/*
     ===================================
     FONCTIONS OBLIGATOIRES
     ===================================
@@ -616,12 +635,15 @@ int undo_moves(struct game *game, int n) {
 		//retire le dernier mouvement effectué
 		struct move_seq *popped;
 		popped = pop(&(game->moves));
+		reverse(&popped);
 		while(popped != NULL) {
 		//mise a jour du tableau
 			int oldx = popped->c_old.x;
         	int oldy = popped->c_old.y;
         	int newx = popped->c_new.x;
         	int newy = popped->c_new.y;
+printf("popped : c_old = (%d,%d)\n",oldx,oldy);
+printf("popped : c_new = (%d,%d)\n",newx,newy);
 			game->board[oldx][oldy] = popped->old_orig;
         	game->board[newx][newy] = EMPTY_CASE;
 			//mise a jour d'une piece potentiellement prise

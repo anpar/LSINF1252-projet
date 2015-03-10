@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <ctype.h>
 #include "dames.h"
+#include "aux.h"
 
 
-void reverse(struct move_seq **list) {
+/*void reverse(struct move_seq **list) {
    struct move_seq *runner, *reversed, *trace; //runner parcourt la liste, 
                                            //tandis que reversed enregistre la liste inversee
                                            //et que trace retient reversed a chaque etape
@@ -18,13 +18,14 @@ void reverse(struct move_seq **list) {
                                //la liste inversee intermediaire
    } 
    *list = reversed;
-}
+}*/
+
+
 
 
 int main(int argc, char *argv[]) {
-    // TODO : interface
 
-	printf("DAME BLANCHE\nJeu de dames sur console\nAuteurs : Monnoyer Charles, Paris Antoine\n \n");
+	printf("\nDAME BLANCHE\nJeu de dames sur console\nAuteurs : Monnoyer Charles, Paris Antoine\n \n");
 
 	struct game* state;
 
@@ -39,15 +40,15 @@ int main(int argc, char *argv[]) {
 	//si il s'agit d'un nouveau jeu
 	if(init=='N') {
 		int sizeL,sizeH;
-		printf("Entrez la largeur du plateau (entre 10 et 20).\n");
+		printf("Entrez la largeur du plateau (max 20).\n");
 		scanf("%d",&sizeL);
-		printf("Entrez la hauteur du plateau (entre 10 et 20).\n");
+		printf("Entrez la hauteur du plateau (max 20).\n");
 		scanf("%d",&sizeH);
 		while((sizeL>20) || (sizeL<0) || (sizeH>20) || (sizeH<0)) {  
 			printf("Entrée invalide : %d,%d\n",sizeL,sizeH);
-			printf("Entrez la largeur du plateau.\n");
+			printf("Entrez la largeur du plateau (max 20).\n");
 			scanf("%d",&sizeL);
-			printf("Entrez la hauteur du plateau.\n");
+			printf("Entrez la hauteur du plateau (max 20).\n");
 			scanf("%d",&sizeH);
 		}
 			printf("Voici le plateau obtenu :\n\n");
@@ -62,15 +63,15 @@ int main(int argc, char *argv[]) {
 		int sizeL,sizeH;
 		int **tab;
 		int player = -1;
-		printf("Entrez la largeur du plateau (entre 10 et 20).\n");
+		printf("Entrez la largeur du plateau (max 20).\n");
 		scanf("%d",&sizeL);
-		printf("Entrez la hauteur du plateau (entre 10 et 20).\n");
+		printf("Entrez la hauteur du plateau (max 20).\n");
 		scanf("%d",&sizeH);
 		while((sizeL>20) || (sizeL<0) || (sizeH>20) || (sizeH<0)) {
 			printf("Entrée invalide : %d,%d.\n",sizeL,sizeH);
-			printf("Entrez la largeur du plateau.\n");
+			printf("Entrez la largeur du plateau (max 20).\n");
 			scanf("%d",&sizeL);
-			printf("Entrez la hauteur du plateau.\n");
+			printf("Entrez la hauteur du plateau (max 20).\n");
 			scanf("%d",&sizeH);
 		}
 		printf("Entrez l'adresse du pointeur contenant l'adresse du plateau existant.\n");
@@ -115,7 +116,8 @@ int main(int argc, char *argv[]) {
 		//si on quitte la partie
 		if(action == 'Q')
 		{
-			printf("Partie terminée, merci d'avoir joué.\n");
+			printf("Partie terminée, merci d'avoir joué.\n\n");
+			free_game(state);
 			return(EXIT_SUCCESS);
 		}
 
@@ -177,12 +179,10 @@ int main(int argc, char *argv[]) {
 				if(yes_no == 'O')
 				{
 					reverse(&seq);
-//printf("coord en argument : (%d,%d)\n",seq->c_old.x,seq->c_old.y);
 					struct move *move = (struct move *) malloc(sizeof(struct move));
 					move->seq = seq;
 					move->next = NULL;
 					result = apply_moves(state, (const struct move *) move);
-//printf("APPLY DONE : %d\n", result);
 					free(move);
 					endOfMove = 1;
 				}
@@ -191,6 +191,12 @@ int main(int argc, char *argv[]) {
 				else
 				{
 					printf("Quelle est la suite du mouvement ?\n");
+				}
+				//libère seq
+				while(seq!=NULL)
+				{
+					free(seq);
+					seq = seq->next;
 				}
 			}//fin du while
 			if(result == -1)
@@ -243,7 +249,8 @@ int main(int argc, char *argv[]) {
         printf("LE JOUEUR NOIR GAGNE LA PARTIE !\n\n");
     }
 
-    printf("Félicitations au gagnant et bien joué aux deux joueurs !\n Merci d'avoir joué à Dame Blanche, jeu de dames sur console !\n\n");
+    printf("Félicitations au gagnant et bien joué aux deux joueurs !\n Merci d'avoir joué à DAME BLANCHE, jeu de dames sur console !\n\n");
+	free_game(state);
 
     return(EXIT_SUCCESS);
 }
