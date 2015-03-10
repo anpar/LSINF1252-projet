@@ -597,14 +597,15 @@ int undo_moves(struct game *game, int n) {
 		struct move_seq *popped;
 		popped = pop(&(game->moves));
 		while(popped != NULL) {
-			int oldx = popped->c_old.x;
+		int oldx = popped->c_old.x;
         	int oldy = popped->c_old.y;
         	int newx = popped->c_new.x;
         	int newy = popped->c_new.y;
-			game->board[oldx][oldy] = popped->old_orig;
+		game->board[oldx][oldy] = popped->old_orig;
         	game->board[newx][newy] = EMPTY_CASE;
-			game->board[popped->piece_taken.x][popped->piece_taken.y] = popped->piece_value;
-			popped = popped->next;
+		game->board[popped->piece_taken.x][popped->piece_taken.y] = popped->piece_value;
+		popped = popped->next;
+		count++;
 		}
 	}
 	return(EXIT_SUCCESS);

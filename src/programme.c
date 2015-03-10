@@ -244,12 +244,12 @@ printf("APPLY DONE : %d\n", result);
 				//Définition de la séquence à insérer
 				struct coord old = {old_x,old_y};
 				struct coord new = {new_x,new_y};
-				struct move_seq seq;
-				seq.c_old = old;
-				seq.c_new = new;
-				seq.next = previous;
+				struct move_seq *seq = (struct move_seq *) malloc(sizeof(struct move_seq));
+				seq->c_old = old;
+				seq->c_new = new;
+				seq->next = previous;
 
-				previous = &seq;
+				previous = seq;
 
 				printf("Le mouvement est-il fini ? (O/N)\n");
 				scanf("%c",&yes_no);
@@ -265,12 +265,13 @@ printf("APPLY DONE : %d\n", result);
 				//si le move est terminé
 				if(yes_no == 'O')
 				{
-					reverse(&previous);
+					reverse(&seq);
+//printf("coord en argument : (%d,%d)\n",seq->c_old.x,seq->c_old.y);
 					struct move *move = (struct move *) malloc(sizeof(struct move));
-					move->seq = previous;
+					move->seq = seq;
 					move->next = NULL;
 					result = apply_moves(state, (const struct move *) move);
-printf("APPLY DONE : %d\n", result);
+//printf("APPLY DONE : %d\n", result);
 					free(move);
 					endOfMove = 1;
 				}
@@ -304,13 +305,35 @@ printf("APPLY DONE : %d\n", result);
 				printf("Combien de mouvements voulez-vous annuler ? (max 50)\n");
 			    scanf("%d",&undo_qtty);
 			}
+printf("undo reached, undo_qtty : %d\n\n", undo_qtty);
+printf("adresse de game->moves (!= NULL si au moins un move effectué) : %p\n\n", state->moves);
 			undo_moves(state, undo_qtty);
+            print_board(state);
+            printf("\nTableau corrigé.\n\n");
 
 		}
 	printf("Au tour du joueur %d (1 = blanc, 0 = noir).\n Que voulez-vous faire ?\n Tapez :\n",state->cur_player);
 	printf("'P' pour afficher le plateau ;\n'M' pour faire un mouvement ;\n'U' pour annuler un mouvement ;\n'Q' pour quitter.\n\n");
 	scanf("%c",&action);
 	}  
+
+//La partie est gagnée
+
+    print_board(state);
+
+    //par le joueur blanc
+    if(state->cur_player == 1)
+    {
+        printf("LE JOUEUR BLNC GAGNE LA PARTIE !\n");
+    }
+
+    //par le joueur noir
+    else
+    {
+        printf("LE JOUEUR NOIR GAGNE LA PARTIE !\n\n");
+    }
+
+    printf("Félicitations au gagnant et bien joué aux deux joueurs !\n Merci d'avoir joué à Dame Blanche, jeu de dames sur console !\n\n");
 
     return(EXIT_SUCCESS);
 }
