@@ -53,6 +53,13 @@ struct move_seq *pop(struct move **list) {
     struct move_seq *popped = (*list)->seq;
 	struct move *removed_move = *list;
 	*list = (*list)->next;
+	while(removed_move->seq!=NULL)
+	{
+		struct move_seq *temp = removed_move->seq;
+		removed_move->seq = removed_move->seq->next;
+		free(temp);					
+	}
+	removed_move->seq = NULL;
 	free(removed_move);
 
 	return(popped);
@@ -639,16 +646,14 @@ int undo_moves(struct game *game, int n) {
 		popped = pop(&(game->moves));
 		reverse(&popped);
 		while(popped != NULL) {
-		//mise a jour du tableau
+		//Rétablissement du tableau
 			int oldx = popped->c_old.x;
         	int oldy = popped->c_old.y;
         	int newx = popped->c_new.x;
         	int newy = popped->c_new.y;
-printf("popped : c_old = (%d,%d)\n",oldx,oldy);
-printf("popped : c_new = (%d,%d)\n",newx,newy);
 			game->board[oldx][oldy] = popped->old_orig;
         	game->board[newx][newy] = EMPTY_CASE;
-			//mise a jour d'une piece potentiellement prise
+			//Rétablissement d'une piece potentiellement prise
 			if((popped->piece_taken.x != -1) || (popped->piece_taken.y != -1))
 			{
 				game->board[popped->piece_taken.x][popped->piece_taken.y] = popped->piece_value;
@@ -656,7 +661,7 @@ printf("popped : c_new = (%d,%d)\n",newx,newy);
 
 			popped = popped->next;
 		}
-		//mise a jour du joueur actuel
+		//Rétablissement du joueur actuel
 		if(game->cur_player == PLAYER_BLACK)
 		{
 			game->cur_player = PLAYER_WHITE;
