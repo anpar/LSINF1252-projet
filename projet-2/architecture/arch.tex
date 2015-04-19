@@ -38,10 +38,22 @@ le résulat dans une structure de données adéquates.
 \section{Principale structures de données}
 
 \section{Algorithme de factorisation}
-L'algorithme de factorisation choisi est l'algorithme
-\textsc{Pollard-Rho}. Cet algorithme est très efficace
-et a pour avantage d'utiliser un nombre constant
-d'emplacement en mémoire\cite{algo}.
+L'algorithme que nous avons décidé d'implémenter pour ce projet
+est un algorithme à but général (c'est à dire dont le temps
+d'éxécution dépend de la taille du nombre à factoriser, et
+non de la taille de ces facteurs premiers). Il s'agit du
+\textit{Shanks's square forms factorization algorithm (SQUFOF)}.
+Nous avons choisis cet algorithme car il possède une bonne
+complexité temporelle ($\sqrt[4]{n}$, où $n$ est le nombre à
+factorisé) tout en étant facile à implémenter. Deux contraintes
+importantes sont cependant à noter, cet algorithme ne fonctionne
+pas si son entrée $n$ est un carré parfait ou un nombre premier. 
+Cependant, cela ne posera pas problème en pratique.
+En effet, dans le cas où $n$ est un carré parfait, il suffit de
+donner $\sqrt{n}$ en entrée à l'algorithme\footnote{Les facteurs
+premiers de $n$ sont identiques aux facteurs premiers de $\sqrt{n}$.}
+Dans le cas où $n$ est un nombre premier, l'algorithme est inutile
+et il peut simplement retourner $n$.
 
 \bibliographystyle{plain}
 \bibliography{arch.bib}
