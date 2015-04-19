@@ -6,10 +6,6 @@
 #include <unistd.h>
 
 /*
- * DRAFT - à nettoyer.
- */
-
-/*
  * gcd(int a, int b) computes the greatest common
  * divisor of a and b using euclide's algorithm
  * recursively.
@@ -51,13 +47,18 @@ void pollard_rho2(unsigned int n)
 
 /*
  * This version of rho-Pollard seems to work.
- * Others works partially.
+ * Inspired from the pseudo-code given here:
+ * http://en.wikipedia.org/wiki/Pollard%27s_rho_algorithm#Algorithm
+ * 
+ * The version with rand works but is non-deterministic.
+ * This version seems to work properly but
+ * more test have to be done.
+ * EDIT AFTER MORE TESTS: it doesn't work properly without
+ * rand. Try for example $ ./core 169.
+ * We have to find a way to handle non-determinism.
  */
 int pollard_rho3(unsigned int n)
 {
-        if(n % 2 == 0)
-                return(2);
-
         srand(time(NULL) + getpid());
         int x = rand() % n;
         int c = rand() % n;
