@@ -1,0 +1,49 @@
+\documentclass{scrartcl}
+% Language
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}      
+\usepackage[francais]{babel}
+% Links
+\usepackage{url}
+\usepackage{hyperref}
+\hypersetup{
+        colorlinks,
+        citecolor=black,
+        filecolor=black,
+        linkcolor=black,
+        urlcolor=black
+}
+
+\title{LSINF1252 - Factorisation de nombres}
+\author{\textsc{Monnoyer} Charles et \textsc{Paris} Antoine}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{Architecture globale}
+Pour structurer une application qui réalise des calculs,
+il est courant d'utiliser des producteurs/consommateurs\cite{syll}.
+Dans notre cas, les producteurs seraient chargé d'extraire
+les nombres à factoriser des fichiers passés en ligne
+de commande et de les placer dans le buffer. Les
+consommateurs seraint quant à eux chargé de factoriser
+les nombres contenus dans le buffer et de sauvegarder
+le résulat dans une structure de données adéquates. 
+
+\section{Threads utilisés}
+
+\section{Mécanismes de synchronisation}
+
+\section{Principale structures de données}
+
+\section{Algorithme de factorisation}
+L'algorithme de factorisation choisi est l'algorithme
+\textsc{Pollard-Rho}. Cet algorithme est très efficace
+et a pour avantage d'utiliser un nombre constant
+d'emplacement en mémoire\cite{algo}.
+
+\bibliographystyle{plain}
+\bibliography{arch.bib}
+
+\end{document}
