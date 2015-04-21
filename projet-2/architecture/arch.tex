@@ -61,6 +61,12 @@ mutex pour protéger les deux buffers et quatre sémaphores.
 \section{Principale structures de données}
 \label{sec:data-structure}
 Les deux buffers seront représentés par des tableaux d'entiers.
+% Il reste à déterminer les tailles relatives des deux buffers. 
+% D'après moi le deuxième devrait être plus grand.
+Les facteurs premiers seront ensuite déplacé du second
+buffer vers une liste châinée de structure.
+Ces structures contiendront un facteur premier et le
+nombre d'occurence associé à ce facteur.
 
 \section{Algorithme de factorisation}
 L'algorithme que nous avons décidé d'implémenter pour ce projet
