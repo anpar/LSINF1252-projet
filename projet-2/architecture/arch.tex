@@ -24,18 +24,43 @@
 \section{Architecture globale}
 Pour structurer une application qui réalise des calculs,
 il est courant d'utiliser des producteurs/consommateurs\cite{syll}.
+Pour cette application, il est peut-être même plus intéressant
+d'utiliser deux buffers et donc d'utiliser des producteurs/
+consommateurs-producteurs/consommateurs.
+
 Dans notre cas, les producteurs seraient chargé d'extraire
 les nombres à factoriser des fichiers passés en ligne
-de commande et de les placer dans le buffer. Les
-consommateurs seraint quant à eux chargé de factoriser
-les nombres contenus dans le buffer et de sauvegarder
-le résulat dans une structure de données adéquates. 
+de commande et de les placer dans le premier buffer. Les
+consommateurs-producteurs seraient quant à eux chargé de
+factoriser les nombres contenus dans le premier buffer pour
+ensuite insérer les facteurs premiers de ces nombres
+dans le second buffer. Enfin, les consommateurs
+permettrait de vider le second buffer pour stocker les
+facteurs premiers dans une structure données (qui sera
+discutée en section \ref{sec:data-structure}.
+
+%\begin{figure}
+%	\centering
+%	\includegraphics[scale=0.5]{img/global.png}
+%	\caption{Schéma de notre architecture.}
+%	\label{fig:global}
+%\end{figure}
 
 \section{Threads utilisés}
+Pour bien fonctionner, notre application nécessite donc
+aux minimum 3 threads : un extracteur, un calculateur et
+un sauveur de résultats.
 
 \section{Mécanismes de synchronisation}
+Pour implémenter un simple problème de producteurs-
+consommateurs, il faut utiliser un mutex pour protéger
+le buffer et deux sémaphores pour gérer les producteurs/
+consommateurs. Dans ce cas-ci, il faudra utiliser deux
+mutex pour protéger les deux buffers et quatre sémaphores.
 
 \section{Principale structures de données}
+\label{sec:data-structure}
+Les deux buffers seront représentés par des tableaux d'entiers.
 
 \section{Algorithme de factorisation}
 L'algorithme que nous avons décidé d'implémenter pour ce projet
