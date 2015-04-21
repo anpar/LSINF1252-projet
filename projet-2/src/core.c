@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <stdbool.h>
+#include <unistd.h>
 
 /*
  * gcd(int a, int b) computes the greatest common
@@ -51,7 +52,10 @@ int SQUFOF(int N)
 
 	int P, Pprev, Q, Qnext, b, tmp, f;
 	for(int k = 1;;k++) {
-		P = floor(sqrt(k*N));
+                sleep(1);
+                printf("\n\nLet's try for k = %d.\n\n", k);
+                sleep(1);
+                P = floor(sqrt(k*N));
 		Q = 1;
 		Qnext = k*N - P*P;
 		
