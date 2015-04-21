@@ -39,13 +39,6 @@ permettrait de vider le second buffer pour stocker les
 facteurs premiers dans une structure données (qui sera
 discutée en section \ref{sec:data-structure}.
 
-%\begin{figure}
-%	\centering
-%	\includegraphics[scale=0.5]{img/global.png}
-%	\caption{Schéma de notre architecture.}
-%	\label{fig:global}
-%\end{figure}
-
 \section{Threads utilisés}
 Pour bien fonctionner, notre application nécessite donc
 aux minimum 3 threads : un extracteur, un calculateur et
@@ -82,7 +75,7 @@ pas si son entrée $n$ est un carré parfait ou un nombre premier.
 Cependant, cela ne posera pas problème en pratique.
 En effet, dans le cas où $n$ est un carré parfait, il suffit de
 donner $\sqrt{n}$ en entrée à l'algorithme\footnote{Les facteurs
-premiers de $n$ sont identiques aux facteurs premiers de $\sqrt{n}$.}
+premiers de $n$ sont identiques aux facteurs premiers de $\sqrt{n}$.}.
 Dans le cas où $n$ est un nombre premier, l'algorithme est inutile
 et il peut simplement retourner $n$.
 

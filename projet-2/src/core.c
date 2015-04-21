@@ -2,8 +2,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <stdbool.h>
-#include <unistd.h>
-#include <sys/types.h>
 
 #define VERBOSE false
 // This macro requires c99.
@@ -150,3 +148,4 @@ int main(int argc, const char *argv[])
         printf("Result of SQUFOF = %d.\n", SQUFOF(n));
         return(EXIT_SUCCESS);
 }
+
