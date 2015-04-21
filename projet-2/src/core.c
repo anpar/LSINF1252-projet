@@ -3,6 +3,7 @@
 #include <math.h>
 #include <stdbool.h>
 #include <unistd.h>
+#include <sys/types.h>
 
 #define VERBOSE false
 // This macro requires c99.
@@ -14,7 +15,7 @@
  * divisor of a and b using euclide's algorithm
  * recursively.
  */
-double gcd(int a, int b)
+double gcd(unsigned int a, unsigned int b)
 {
         verbose_printf("Computing gcd  of %d and %d.\n", a, b);
         if(b == 0)
@@ -27,7 +28,8 @@ double gcd(int a, int b)
  * Used to test whether a integer is a 
  * perfect square or not.
  */
-bool isPerfectSquare(int n) {
+bool isPerfectSquare(unsigned int n) 
+{
         int temp = sqrt(n);
         return(temp*temp == n);
 }
@@ -35,16 +37,40 @@ bool isPerfectSquare(int n) {
 /*
  * Used to test whether a number is
  * prime or not.
+ * Shamefully inspired from Wikipedia. 
  */
-bool isPrime(int n) {
-        return(false);
+bool isPrime(unsigned int n) 
+{
+        if (n <= 3) {
+                return n > 1;
+        }
+         
+        if (n % 2 == 0 || n % 3 == 0) {
+                return false;
+        }
+             
+        for (unsigned short i = 5; i * i <= n; i += 6) {
+                if (n % i == 0 || n % (i + 2) == 0) {
+                        return false;
+                }
+        }
+                 
+        return true;
 }
 
 /*
  * Shanks's square forms factorization algorithm.
  */
-int SQUFOF(int N)
+int SQUFOF(unsigned int N)
 {
+        /*
+         * Note that by definition, the prime factorization
+         * of 1 is an empty product (1 = 2^0*3^0*5^0...).
+         */
+        if(N == 1) {
+                return(EXIT_FAILURE);
+        }
+
         if(isPerfectSquare(N)) {
                 verbose_printf("Input is a square number!\n");
                 N = sqrt(N);
@@ -119,8 +145,8 @@ int SQUFOF(int N)
 
 int main(int argc, const char *argv[])
 {
-        int n = atoi(argv[1]);
-        printf("Computing prime factor of %d.\n", n);
+        unsigned int n = atol(argv[1]);
+        printf("Computing non-trivial factor of %d.\n", n);
         printf("Result of SQUFOF = %d.\n", SQUFOF(n));
         return(EXIT_SUCCESS);
 }
