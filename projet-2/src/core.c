@@ -4,6 +4,11 @@
 #include <stdbool.h>
 #include <unistd.h>
 
+#define VERBOSE false
+// This macro requires c99.
+#define verbose_printf(fmt, ...) \
+                    do { if (VERBOSE) printf(fmt,## __VA_ARGS__); } while (0)
+
 /*
  * gcd(int a, int b) computes the greatest common
  * divisor of a and b using euclide's algorithm
@@ -11,7 +16,7 @@
  */
 double gcd(int a, int b)
 {
-        printf("Computing gcd  of %d and %d.\n", a, b);
+        verbose_printf("Computing gcd  of %d and %d.\n", a, b);
         if(b == 0)
                 return(a);
         else
@@ -27,6 +32,10 @@ bool isPerfectSquare(int n) {
         return(temp*temp == n);
 }
 
+/*
+ * Used to test whether a number is
+ * prime or not.
+ */
 bool isPrime(int n) {
         return(false);
 }
@@ -37,12 +46,12 @@ bool isPrime(int n) {
 int SQUFOF(int N)
 {
         if(isPerfectSquare(N)) {
-                printf("Input is a square number!\n");
+                verbose_printf("Input is a square number!\n");
                 N = sqrt(N);
         }
         
         if(isPrime(N)) {
-                printf("Input is prime!\n");
+                verbose_printf("Input is prime!\n");
                 return(N);
         }
 
@@ -50,16 +59,15 @@ int SQUFOF(int N)
                 return(2);
         }
 
-	int P, Pprev, Q, Qnext, b, tmp, f;
+	int P, Pprev, Q, Qnext, b, tmp, f, i;
+        int lim = 100;
 	for(int k = 1;;k++) {
-                sleep(1);
-                printf("\n\nLet's try for k = %d.\n\n", k);
-                sleep(1);
+                verbose_printf("\nLet's try for k = %d.\n", k);
                 P = floor(sqrt(k*N));
 		Q = 1;
 		Qnext = k*N - P*P;
 		
-		printf("\t\t P(0)=%d \t Q(0)=%d \t Q(1)=%d\n", P, Q, Qnext);
+		verbose_printf("\t\t P(0)=%d \t Q(0)=%d \t Q(1)=%d\n", P, Q, Qnext);
 
 		while(!isPerfectSquare(Qnext)) {
 	       		b = floor((floor(sqrt(k*N)) + P)/Qnext);
@@ -70,19 +78,19 @@ int SQUFOF(int N)
 		        Qnext = Q + b*(Pprev - P);
 		        Q = tmp;
 		
-			printf("P(i-1)=%d \t P(i)=%d \t Q(i)=%d \t Q(i+1)=%d\n",Pprev, P, Q, Qnext);              
+			verbose_printf("P(i-1)=%d \t P(i)=%d \t Q(i)=%d \t Q(i+1)=%d\n",Pprev, P, Q, Qnext);              
 		}
 		
-		printf("Here, Q(i+1) is a perfect square\n");
+		verbose_printf("Here, Q(i+1) is a perfect square\n");
 
 		b = floor((floor(sqrt(k*N)) - P)/sqrt(Qnext));
 		P = b*sqrt(Qnext) + P;
 		Q = sqrt(Qnext);
 		Qnext = (k*N - P*P)/Q;
 		
-		printf("\t\t P(0)=%d \t Q(0)=%d \t Q(1)=%d\n", P, Q, Qnext);
-
-		while(P != Pprev) {      
+		verbose_printf("\t\t P(0)=%d \t Q(0)=%d \t Q(1)=%d\n", P, Q, Qnext);
+                i = 0;
+		while(P != Pprev && i < lim) {      
 		       	b = floor((floor(sqrt(k*N)) + P)/Qnext);
 			Pprev = P;        	
 			P = b*Qnext - P;
@@ -90,17 +98,22 @@ int SQUFOF(int N)
 			tmp = Qnext;
 		        Qnext = Q + b*(Pprev - P);
 		        Q = tmp;
-		
-			 printf("P(i-1)=%d \t P(i)=%d \t Q(i)=%d \t Q(i+1)=%d\n",Pprev, P, Q, Qnext);    	        
-		}
+		        i++;
 
-		printf("P(i)=%d\n",Pprev);
-		printf("Here P(i) = P(i-1)\n");
-
-		f = gcd(N, P);
-		if(f != 1 && f != N) {
-			return(f);
+			verbose_printf("P(i-1)=%d \t P(i)=%d \t Q(i)=%d \t Q(i+1)=%d\n",Pprev, P, Q, Qnext);    	        
 		}
+                
+                if(i == lim) {
+                        verbose_printf("Failure with k = %d.\n", k);
+                }
+                else {
+		        verbose_printf("Here P(i) = P(i-1)\n");
+
+		        f = gcd(N, P);
+		        if(f != 1 && f != N) {
+			        return(f);
+		        }
+                }
 	}
 }
 
