@@ -147,7 +147,7 @@ int SQUFOF(unsigned int N)
 int main(int argc, const char *argv[])
 {
         unsigned int n = atol(argv[1]);
-        printf("Computing non-trivial factor of %d.\n", n);
+        printf("Computing non-trivial factor of %u.\n", n);
         printf("Result of SQUFOF = %d.\n", SQUFOF(n));
         return(EXIT_SUCCESS);
 }

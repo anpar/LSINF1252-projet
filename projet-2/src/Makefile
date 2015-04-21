@@ -1,5 +1,5 @@
-core:
-	gcc -std=c99 -Wall core.c -o core -lm -g
+core: 
+	gcc -std=c99 -Wall -Werror squfof.c -o fact -lm
 
 clean:
-	rm core
+	rm fact
