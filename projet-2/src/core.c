@@ -49,7 +49,7 @@ int SQUFOF(int N)
                 return(2);
         }
 
-	int P, Pprev, Q, Qnext, b, tmp;
+	int P, Pprev, Q, Qnext, b, tmp, f;
 	for(int k = 1;;k++) {
 		P = floor(sqrt(k*N));
 		Q = 1;
@@ -70,51 +70,36 @@ int SQUFOF(int N)
 		}
 		
 		printf("Here, Q(i+1) is a perfect square\n");
-                /*
-                 * In some case, Q(i+1) = 1, which is a perfect
-                 * square. But when Q(i+1) = 1, the algorithm
-                 * doesn't returns a prime number (e.g, try with 111, then
-                 * 1111, then 11111, etc). I solved
-                 * this by adding the condition on Qnext, now it seems
-                 * to work (try again with 1111, 11111, etc).
-                 */
-                if(Qnext != 1) {
-		        b = floor((floor(sqrt(k*N)) - P)/sqrt(Qnext));
-		        P = b*sqrt(Qnext) + P;
-		        Q = sqrt(Qnext);
-		        Qnext = (k*N - P*P)/Q;
+
+		b = floor((floor(sqrt(k*N)) - P)/sqrt(Qnext));
+		P = b*sqrt(Qnext) + P;
+		Q = sqrt(Qnext);
+		Qnext = (k*N - P*P)/Q;
 		
-		        printf("\t\t P(0)=%d \t Q(0)=%d \t Q(1)=%d\n", P, Q, Qnext);
+		printf("\t\t P(0)=%d \t Q(0)=%d \t Q(1)=%d\n", P, Q, Qnext);
 
-		        while(P != Pprev) {      
-		       	        b = floor((floor(sqrt(k*N)) + P)/Qnext);
-			        Pprev = P;        	
-			        P = b*Qnext - P;
+		while(P != Pprev) {      
+		       	b = floor((floor(sqrt(k*N)) + P)/Qnext);
+			Pprev = P;        	
+			P = b*Qnext - P;
 
-			        tmp = Qnext;
-		                Qnext = Q + b*(Pprev - P);
-		                Q = tmp;
+			tmp = Qnext;
+		        Qnext = Q + b*(Pprev - P);
+		        Q = tmp;
 		
-			        printf("P(i-1)=%d \t P(i)=%d \t Q(i)=%d \t Q(i+1)=%d\n",Pprev, P, Q, Qnext);    	        
-		        }
+			 printf("P(i-1)=%d \t P(i)=%d \t Q(i)=%d \t Q(i+1)=%d\n",Pprev, P, Q, Qnext);    	        
+		}
 
-		        printf("P(i)=%d\n",Pprev);
-		        printf("Here P(i) = P(i-1)\n");
+		printf("P(i)=%d\n",Pprev);
+		printf("Here P(i) = P(i-1)\n");
 
-		        int f = gcd(N, P);
-		        if(f != 1 && f != N) {
-			        return(f);
-		        }
-                }
+		f = gcd(N, P);
+		if(f != 1 && f != N) {
+			return(f);
+		}
 	}
 }
 
-/*
- * I find another bug (in fact, I don't know if it's
- * a bug or not). Try running this programme with 
- * 446744073, it returns 7053, which is a factor
- * of 446744073 but not a prime factor. 
- */
 int main(int argc, const char *argv[])
 {
         int n = atoi(argv[1]);
