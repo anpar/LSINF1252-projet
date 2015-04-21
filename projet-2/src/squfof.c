@@ -4,7 +4,10 @@
 #include <stdbool.h>
 
 #define VERBOSE false
-// This macro requires c99.
+/* 
+ * This macro requires c99.
+ * Used to debug SQUFOF algorithm.
+ */
 #define verbose_printf(fmt, ...) \
                     do { if (VERBOSE) printf(fmt,## __VA_ARGS__); } while (0)
 
@@ -148,4 +151,3 @@ int main(int argc, const char *argv[])
         printf("Result of SQUFOF = %d.\n", SQUFOF(n));
         return(EXIT_SUCCESS);
 }
-
