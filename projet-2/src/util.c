@@ -1,60 +1,17 @@
 #include <stdio.h>
-#include <stdlib>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <regex.h>
+#include <sys/types.h>
+#include "util.h"
 
-
-/*
- * Une structure contenant un nombre et son fichier d'origine
- */
-typedef struct prime_factor {
-	unsigned int n;
-	char *origin;
-	} prime_factor;
-
-
-/*
- * Liste chainée contenant des structures de type number
- */
-typedef struct node {
-	struct prime_factor content;
-	struct node *next;
-	} node;
-
-
-int insert(struct prime_factor toAdd)
+bool is_url(const char * filename) 
 {
-	struct node *runner;
-	runner = list;
+	regex_t regex;
+	const char *pattern = "^(http)|(https)://w{3}?.[.-_[:alnum:]]+\\.[[:lower:]]{2,4}";
+	int err = regcomp(&regex, pattern, REG_EXTENDED);
+	if(err != 0)
+		return(false); 
 
-	if(runner->content.n > toAdd) { //cas debut de la liste
-		struct node *nodeToAdd;
-		nodeToAdd->content = toAdd;
-		nodeToAdd->next = runner;
-		runner = toAdd;
-	}
-
-	//boucle dans la liste jusqu'a etre juste AVANT l'endroit de l'insertion (ou au bout)
-	while(runner->next != NULL && runner->next->content.n < toAdd.n) {
-		runner = runner->next;	
-	}
-	if(runner->next == NULL) { //cas fin de la liste
-		struct node *nodeToAdd;
-		nodeToAdd->content = toAdd;
-		nodeToAdd->next = NULL;
-		runner->next = nodeToAdd;
-	}
-	else if(runner->next->content.n == toAdd) { //cas deja present dans la liste
-		runner->next->content->origin = NULL; //l'origine est passée a null
-	}
-	else {//cas pas encore dans la liste
-		struct node *nodeToAdd;
-		nodeToAdd->content = toAdd;
-		nodeToAdd->next = runner->next;
-		runner->next = nodeToAdd;
-	}
-	return(EXIT_SUCCESS);
-}
-
-
-int main(int argc, int *argv[])
-{
+	return(!regexec(&regex, filename, 0, NULL, 0));		
 }

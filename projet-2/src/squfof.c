@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <stdbool.h>
+#include "squfof.h"
 
 #define VERBOSE false
 /* 
@@ -11,11 +12,6 @@
 #define verbose_printf(fmt, ...) \
                     do { if (VERBOSE) printf(fmt,## __VA_ARGS__); } while (0)
 
-/*
- * gcd(int a, int b) computes the greatest common
- * divisor of a and b using euclide's algorithm
- * recursively.
- */
 double gcd(unsigned int a, unsigned int b)
 {
         verbose_printf("Computing gcd  of %d and %d.\n", a, b);
@@ -25,21 +21,12 @@ double gcd(unsigned int a, unsigned int b)
                 return(gcd(b, a % b));
 }
 
-/*
- * Used to test whether a integer is a 
- * perfect square or not.
- */
 bool isPerfectSquare(unsigned int n) 
 {
         int temp = sqrt(n);
         return(temp*temp == n);
 }
 
-/*
- * Used to test whether a number is
- * prime or not.
- * Shamefully inspired from Wikipedia. 
- */
 bool isPrime(unsigned int n) 
 {
         if (n <= 3) {
@@ -59,9 +46,6 @@ bool isPrime(unsigned int n)
         return true;
 }
 
-/*
- * Shanks's square forms factorization algorithm.
- */
 int SQUFOF(unsigned int N)
 {
         /*
@@ -142,12 +126,4 @@ int SQUFOF(unsigned int N)
 		        }
                 }
 	}
-}
-
-int main(int argc, const char *argv[])
-{
-        unsigned int n = atol(argv[1]);
-        printf("Computing non-trivial factor of %u.\n", n);
-        printf("Result of SQUFOF = %d.\n", SQUFOF(n));
-        return(EXIT_SUCCESS);
 }

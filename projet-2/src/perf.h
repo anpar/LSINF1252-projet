@@ -5,7 +5,7 @@
  * Return the difference between two timeval.
  * Inspired by APE7.
  */
-extern long timeval_diff(struct timeval, struct timeval)
+extern long timeval_diff(struct timeval *, struct timeval *);
 
 #endif
 

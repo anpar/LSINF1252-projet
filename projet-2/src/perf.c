@@ -1,5 +1,5 @@
-#include <sys/times>
-#include "perf.c"
+#include <sys/time.h>
+#include "perf.h"
 
 long timeval_diff(struct timeval *t2, struct timeval *t1)
 {

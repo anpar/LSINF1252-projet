@@ -2,23 +2,12 @@
 #define _CORE_H
 
 /*
- * This structure allows us to create
- * a linked list containing every prime
- * factors
- */
-extern struct node {
-	struct prime_factor content;
-	struct node *next;
-}
-
-
-/*
  * This structure will be contained
  * in the first buffer. n is a number
  * to factorize and origin is the name
  * of the file where this number was found/
  */
-extern struct number {
+struct number {
 	unsigned int n;
 	char * origin;
 };
@@ -40,19 +29,20 @@ extern struct number {
  * factor is not unique, then origin will
  * be NULL.
  */
-struct struct prime_factor {
+struct prime_factor {
 	unsigned int f;
 	char * origin;
-}
+};
 
 /*
- * @input : a string containing either a local
- * filename or an URL.
- *
- * This function will call either extract_url
- * or extract_file.
+ * This structure allows us to create
+ * a linked list containing every prime
+ * factors
  */
-extern void * extract(void *);
+struct node {
+	struct prime_factor content;
+	struct node *next;
+};
 
 /*
  * @input : a string containing an URL.
@@ -86,6 +76,13 @@ extern void * factorize(void *);
  * the second buffer to the global linked list.
  */
 extern void * save_data(void *);
+
+/*
+ * This sub-function of save_data simplu
+ * add a struct prime_factor in a linked
+ * list.
+ */
+extern int insert(struct prime_factor);
 
 /*
  * This function finds the unique prime factor
