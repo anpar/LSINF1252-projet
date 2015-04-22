@@ -51,11 +51,11 @@ struct move_seq *pop(struct move **list) {
     }
 
     struct move_seq *popped = (*list)->seq;
-	struct move *removed_move = *list;
-	*list = (*list)->next;
-	free(removed_move);
+    struct move *removed_move = *list;
+    *list = (*list)->next;
+    free(removed_move);
 
-	return(popped);
+    return(popped);
 }
 
 /*
