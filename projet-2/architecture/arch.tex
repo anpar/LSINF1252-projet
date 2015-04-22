@@ -1,0 +1,85 @@
+\documentclass{scrartcl}
+% Language
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}      
+\usepackage[francais]{babel}
+% Links
+\usepackage{url}
+\usepackage{hyperref}
+\hypersetup{
+        colorlinks,
+        citecolor=black,
+        filecolor=black,
+        linkcolor=black,
+        urlcolor=black
+}
+
+\title{LSINF1252 - Factorisation de nombres}
+\author{\textsc{Monnoyer} Charles et \textsc{Paris} Antoine}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{Architecture globale}
+Pour structurer une application qui réalise des calculs,
+il est courant d'utiliser des producteurs/consommateurs\cite{syll}.
+Pour cette application, il est peut-être même plus intéressant
+d'utiliser deux buffers et donc d'utiliser des producteurs/
+consommateurs-producteurs/consommateurs.
+
+Dans notre cas, les producteurs seraient chargé d'extraire
+les nombres à factoriser des fichiers passés en ligne
+de commande et de les placer dans le premier buffer. Les
+consommateurs-producteurs seraient quant à eux chargé de
+factoriser les nombres contenus dans le premier buffer pour
+ensuite insérer les facteurs premiers de ces nombres
+dans le second buffer. Enfin, les consommateurs
+permettrait de vider le second buffer pour stocker les
+facteurs premiers dans une structure données (qui sera
+discutée en section \ref{sec:data-structure}.
+
+\section{Threads utilisés}
+Pour bien fonctionner, notre application nécessite donc
+aux minimum 3 threads : un extracteur, un calculateur et
+un sauveur de résultats.
+
+\section{Mécanismes de synchronisation}
+Pour implémenter un simple problème de producteurs-
+consommateurs, il faut utiliser un mutex pour protéger
+le buffer et deux sémaphores pour gérer les producteurs/
+consommateurs. Dans ce cas-ci, il faudra utiliser deux
+mutex pour protéger les deux buffers et quatre sémaphores.
+
+\section{Principale structures de données}
+\label{sec:data-structure}
+Les deux buffers seront représentés par des tableaux d'entiers.
+% Il reste à déterminer les tailles relatives des deux buffers. 
+% D'après moi le deuxième devrait être plus grand.
+Les facteurs premiers seront ensuite déplacé du second
+buffer vers une liste châinée de structure.
+Ces structures contiendront un facteur premier et le
+nombre d'occurence associé à ce facteur.
+
+\section{Algorithme de factorisation}
+L'algorithme que nous avons décidé d'implémenter pour ce projet
+est un algorithme à but général (c'est à dire dont le temps
+d'éxécution dépend de la taille du nombre à factoriser, et
+non de la taille de ces facteurs premiers). Il s'agit du
+\textit{Shanks's square forms factorization algorithm (SQUFOF)}.
+Nous avons choisis cet algorithme car il possède une bonne
+complexité temporelle ($\sqrt[4]{n}$, où $n$ est le nombre à
+factorisé) tout en étant facile à implémenter. Deux contraintes
+importantes sont cependant à noter, cet algorithme ne fonctionne
+pas si son entrée $n$ est un carré parfait ou un nombre premier. 
+Cependant, cela ne posera pas problème en pratique.
+En effet, dans le cas où $n$ est un carré parfait, il suffit de
+donner $\sqrt{n}$ en entrée à l'algorithme\footnote{Les facteurs
+premiers de $n$ sont identiques aux facteurs premiers de $\sqrt{n}$.}.
+Dans le cas où $n$ est un nombre premier, l'algorithme est inutile
+et il peut simplement retourner $n$.
+
+\bibliographystyle{plain}
+\bibliography{arch.bib}
+
+\end{document}

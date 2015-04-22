@@ -193,11 +193,13 @@ int main(int argc, char *argv[]) {
 					printf("Quelle est la suite du mouvement ?\n");
 				}
 				//libère seq
-				while(seq!=NULL)
+				/*while(seq!=NULL)
 				{
-					free(seq);
+					struct move_seq *temp = seq;
 					seq = seq->next;
+					free(temp);					
 				}
+				seq = NULL;*/
 			}//fin du while
 			if(result == -1)
 				{
