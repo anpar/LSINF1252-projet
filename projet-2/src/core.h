@@ -2,6 +2,17 @@
 #define _CORE_H
 
 /*
+ * This structure allows us to create
+ * a linked list containing every prime
+ * factors
+ */
+extern struct node {
+	struct prime_factor content;
+	struct node *next;
+}
+
+
+/*
  * This structure will be contained
  * in the first buffer. n is a number
  * to factorize and origin is the name
