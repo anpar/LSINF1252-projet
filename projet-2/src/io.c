@@ -9,6 +9,8 @@ void usage(int error)
                 fprintf(stderr, "Invalid number of arguments.\n");
                 fprintf(stderr, "Example:\n");
                 fprintf(stderr, "./upfact -maxthreads 8 file1 file2 https://example.org/file\n");
+                fprintf(stderr, "Note that -maxthreads also set the size of the first buffer.\n");
+                fprintf(stderr, "You can also use -stdin to read flow from terminal.\n");
         }
         else if(error == ETHREADS) {
                 fprintf(stderr, "Invalid argument : maxthreads must be a positive integer.\n");

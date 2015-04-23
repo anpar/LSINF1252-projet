@@ -1,23 +1,8 @@
 #ifndef _CORE_H
 #define _CORE_H
 
-/*
- * This structure will be contained
- * in the first buffer. n is a number
- * to factorize and origin is the name
- * of the file where this number was found/
- */
-struct number {
-	unsigned int n;
-	char * origin;
-};
-
 /* 
- * This structure is quite similar
- * to the one above. The only difference
- * is that this one will be contained in
- * the second buffer. f is a prime
- * factor and origin is still the name
+ * n is a number and origin is the name
  * of the file where this factor was found.
  * 
  * When a structure of this type is added
@@ -29,18 +14,21 @@ struct number {
  * factor is not unique, then origin will
  * be NULL.
  */
-struct prime_factor {
-	unsigned int f;
-	char * origin;
+struct number {
+	unsigned int n;
+	char *  origin;
 };
 
 /*
  * This structure allows us to create
  * a linked list containing every prime
- * factors
+ * factors.
+ *
+ * We also use this structure for the stacks
+ * representing the two buffers.
  */
 struct node {
-	struct prime_factor content;
+	struct number *content;
 	struct node *next;
 };
 
@@ -82,7 +70,7 @@ extern void * save_data(void *);
  * add a struct prime_factor in a linked
  * list.
  */
-extern int insert(struct prime_factor);
+extern int insert(struct number);
 
 /*
  * This function finds the unique prime factor
