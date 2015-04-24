@@ -66,11 +66,17 @@ extern void * factorize(void *);
 extern void * save_data(void *);
 
 /*
- * This sub-function of save_data simplu
+ * This sub-function of save_data simply
  * add a struct prime_factor in a linked
  * list.
  */
 extern int insert(struct number *);
+
+/*
+ * This function frees the linked-list list 
+ * by popping each of its nodes.
+ */
+void free_list()
 
 /*
  * This function finds the unique prime factor

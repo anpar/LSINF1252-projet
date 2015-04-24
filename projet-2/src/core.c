@@ -118,3 +118,10 @@ int insert(struct number *new)
 	return(EXIT_SUCCESS);
 }
 
+
+void free_list()
+{
+	while(stack != NULL) {
+		pop(&list);
+	}
+}
