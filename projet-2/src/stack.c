@@ -16,8 +16,13 @@ void push(struct node ** stack, struct number * new)
         struct node *n = (struct node *) malloc(sizeof(struct node));
         if(n == NULL)
                 exit(EXIT_FAILURE);
-
-        n->content = new;
+	struct number *toAdd = (struct number *) malloc(sizeof(struct number));
+	if(toAdd == NULL)
+		exit(EXIT_FAILURE);
+	
+	toAdd->n = new->n;
+	toAdd->origin = new->origin;
+        n->content = toAdd;
         n->next = *stack;
         *stack = n;
 	
