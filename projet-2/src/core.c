@@ -94,36 +94,52 @@ void * factorize(void * n)
 }
 
 
-/* In comment since it doesn't work
-int insert(struct number new)
+int insert(struct number *new)
 {
+	// Create a structure number that can be inserted
+	struct number *toAdd = (struct number *) malloc(sizeof(struct number));
+	if(toAdd == NULL)
+		exit(EXIT_FAILURE);
+	toAdd->n = new->n;
+	toAdd->origin = new->origin;
+
+	//Create a node in order to check the list node by node
 	struct node *runner;
 	runner = list;
-	struct node *nodenew;
-	nodenew->content = new;	
 
-	// Cas début de la liste
-	if(runner->content.n > new.n) { 
-		nodenew->next = runner;
-		runner->content = new;
+	//Create the node containing the number that will be inserted
+	struct node *nodenew;
+	nodenew->content = toAdd;	
+
+	// If the list is EMPTY
+	if(list == NULL) {
+		list = nodenew;
 	}
 
-	// Boucle dans la liste jusqu'a etre juste avant 
-	// l'endroit de l'insertion (ou au bout)
-	while(runner->next != NULL && runner->next->content.n < new.n) {
+	// If new has to be inserted as the FIRST NODE
+	if(runner->content->n > new->n) { 
+		nodenew->next = runner;
+		list = nodenew;
+	}
+
+	// Run in the list until runner is just BEFORE
+	//where it has to be inserted (or at the end)
+	while(runner->next != NULL && runner->next->content->n < new->n) {
 		runner = runner->next;	
 	}
 
-	// Cas fin de la liste
+	// If new has to be inserted as the LAST NODE
 	if(runner->next == NULL) { 
 		nodenew->next = NULL;
 		runner->next = nodenew;
 	}
-	// Cas deja present dans la liste, l'origine est passée a null
-	else if(runner->next->content.n == new.n) { 
-		runner->next->content.origin = NULL; 
+
+	// Inside the list, if new->n is ALREADY IN THE LIST
+	else if(runner->next->content->n == new->n) { 
+		runner->next->content->origin = NULL; 
 	}
-	// Cas pas encore dans la liste
+
+	// Inside the list, if new->n ISN'T IN THE LIST YET
 	else {
 		nodenew->next = runner->next;
 		runner->next = nodenew;
@@ -131,4 +147,27 @@ int insert(struct number new)
 
 	return(EXIT_SUCCESS);
 }
-*/
+
+
+void free_list()
+{
+	while(list != NULL) {
+		pop(&list);
+	}
+}
+
+struct number * find_unique()
+{
+	//Create a node in order to check the list node by node
+	struct node *runner;
+	runner = list;
+
+	while(runner->next != NULL && runner->content->origin == NULL) {
+		runner = runner->next;
+	}
+
+	if(runner->content->origin != NULL) 
+		return(runner->content);
+		
+	exit(EXIT_FAILURE);
+}

@@ -38,6 +38,7 @@ struct number * pop(struct node ** stack)
        	struct node * removed = *stack;
        	r = (*stack)->content;
        	*stack = (*stack)->next;
+	free(r);
        	free(removed);
        	debug_printf("Pop: success!\n");
        	return(r);
