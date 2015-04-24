@@ -23,6 +23,9 @@ sem_t full1;
 sem_t empty2;
 sem_t full2;
 
+bool file_red;
+bool fact_done;
+
 int main(int argc, const char *argv[])
 {
         struct timeval tvStart, tvEnd;
@@ -70,13 +73,22 @@ int main(int argc, const char *argv[])
                 }
         }
         
+	// Semaphores initialization
         err = sem_init(&empty1, 0, maxthreads);
         if(err != 0)
                 exit(EXIT_FAILURE);
+	
+	err = sem_init(&empty2, 0, maxthreads);
+	if(err != 0)
+		exit(EXIT_FAILURE);	
 
         err = sem_init(&full1, 0, 0);
         if(err != 0)
                 exit(EXIT_FAILURE);
+
+	err = sem_init(&full2, 0, 0);
+	if(err != 0)
+		exit(EXIT_FAILURE);
 
         pthread_t extractors[files];
         if(files == 0) {
@@ -100,6 +112,16 @@ int main(int argc, const char *argv[])
                 }
         }
         
+	// Lancement des threads de calculs
+	pthread_t calculators[maxthreads];
+	for(int i = 0; i < maxthreads; i++) {
+		err = pthread_create(&(calculators[i]), NULL, &factorize, NULL);
+		if(err != 0)
+			exit(EXIT_FAILURE);
+
+		debug_printf("Creating calculators...\n");
+	}
+
         // Récupération et libération des threads extractors
         // Remarque: on ne rentre dans la boucle que si files != 0.
         for(int i = 0; i < files; i++) {
@@ -110,9 +132,20 @@ int main(int argc, const char *argv[])
                 debug_printf("Extractor on %s has terminated.\n", filenames[i]);
         }
 
-	// Lancement des 'maxthreads' threads de calculs
+	// Si on arrive ici, la lecture des fichier est terminée
+	debug_printf("Extraction finished.\n");
+	file_red = true;			
 	
-// Lancement de l'unique thread de sauvegarde (déplacement
+	for(int i = 0; i < maxthreads; i++) {
+                err = pthread_join(calculators[i], NULL);
+                if(err != 0)
+                        exit(EXIT_FAILURE);
+
+                debug_printf("Calculator has terminated.\n");
+        }
+	debug_printf("Computation finished.\n");
+
+	// Lancement de l'unique thread de sauvegarde (déplacement
 	// du second buffer vers la liste chaînée
 	
 	// Le thread principal lance find_unique
@@ -122,7 +155,7 @@ int main(int argc, const char *argv[])
                 return(EXIT_FAILURE);
 
         // Output
-        printf("result\n");
+	printf("result\n");
         printf("filename\n");
         printf("%ldus\n", timeval_diff(&tvEnd, &tvStart));
 }

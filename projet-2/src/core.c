@@ -2,9 +2,11 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <semaphore.h>
+#include <stdbool.h>
 
 #include "core.h"
 #include "stack.h"
+#include "squfof.h"
 
 #define DEBUG true
 /* 
@@ -28,6 +30,10 @@ struct node * buffer2;
 extern sem_t empty2;
 extern sem_t full2;
 
+// Variables contenant les conditions d'arrêt des threads
+extern bool file_red;
+extern bool fact_done;
+
 void * extract_file(void * filename) {
 	FILE *f;
 	int err;
@@ -49,7 +55,7 @@ void * extract_file(void * filename) {
 		sem_wait(&empty1);
 	        pthread_mutex_lock(&mutex1);
 		push(&buffer1, &new);
-                display(buffer1);
+                //display(buffer1);
 		pthread_mutex_unlock(&mutex1);
 		sem_post(&full1);
 		fscanf(f, "%u", &n);
@@ -62,6 +68,31 @@ void * extract_file(void * filename) {
         
         pthread_exit(NULL);
 }
+
+void * factorize(void * n)
+{
+	struct number *item;
+	bool cond = true;
+	while(cond) 
+		// PROBLEME ICI
+		if(file_red && is_empty(buffer1)) {
+                        debug_printf("In condition.\n");
+                        cond = false;
+                        fact_done = true;
+                }
+		else {
+			sem_wait(&full1);
+			pthread_mutex_lock(&mutex1);
+			item = pop(&buffer1);
+			printf("item : %d.\n", item->n);
+			pthread_mutex_unlock(&mutex1);
+			sem_post(&empty1);
+		}
+	}	
+
+	pthread_exit(NULL);
+}
+
 
 /* In comment since it doesn't work
 int insert(struct number new)

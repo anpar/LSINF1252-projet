@@ -23,6 +23,9 @@ core.o: core.c core.h
 stack.o: stack.c stack.o
 	gcc $(CFLAGS) -c stack.c
 
+squfof.o: squfof.c squfof.o
+	gcc $(CFLAGS) -c squfof.c
+
 clean:
 	rm -rf *.o
 
