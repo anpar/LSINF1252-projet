@@ -70,7 +70,7 @@ extern void * save_data(void *);
  * add a struct prime_factor in a linked
  * list.
  */
-extern int insert(struct number);
+extern int insert(struct number *);
 
 /*
  * This function finds the unique prime factor
