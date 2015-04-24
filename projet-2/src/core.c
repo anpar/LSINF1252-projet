@@ -41,8 +41,9 @@ void * extract_file(void * filename) {
         // Initialize new to 0 and NULL by default
 	struct number new = {0, NULL};
 	unsigned int n;
+	fscanf(f, "%u", &n);
 	while(!feof(f))	{
-                fscanf(f, "%d", &n);
+                //fscanf(f, "%u", &n);
 		(&new)->n = n;
 		(&new)->origin = file;
 		sem_wait(&empty1);
@@ -51,6 +52,7 @@ void * extract_file(void * filename) {
                 display(buffer1);
 		pthread_mutex_unlock(&mutex1);
 		sem_post(&full1);
+		fscanf(f, "%u", &n);
         }
 
 	err = fclose(f);
