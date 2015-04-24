@@ -112,7 +112,7 @@ int main(int argc, const char *argv[])
 
 	// Lancement des 'maxthreads' threads de calculs
 	
-	// Lancement de l'unique thread de sauvegarde (déplacement
+// Lancement de l'unique thread de sauvegarde (déplacement
 	// du second buffer vers la liste chaînée
 	
 	// Le thread principal lance find_unique
