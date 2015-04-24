@@ -33,6 +33,7 @@ extern sem_t full2;
 // Variables contenant les conditions d'arrêt des threads
 extern bool file_red;
 extern bool fact_done;
+bool is_empty_buffer1 = false;
 
 void * extract_file(void * filename) {
 	FILE *f;
@@ -49,13 +50,12 @@ void * extract_file(void * filename) {
 	unsigned int n;
 	fscanf(f, "%u", &n);
 	while(!feof(f))	{
-                //fscanf(f, "%u", &n);
 		(&new)->n = n;
 		(&new)->origin = file;
 		sem_wait(&empty1);
 	        pthread_mutex_lock(&mutex1);
 		push(&buffer1, &new);
-                //display(buffer1);
+                display(buffer1);
 		pthread_mutex_unlock(&mutex1);
 		sem_post(&full1);
 		fscanf(f, "%u", &n);
@@ -72,22 +72,16 @@ void * extract_file(void * filename) {
 void * factorize(void * n)
 {
 	struct number *item;
-	bool cond = true;
-	while(cond) 
-		// PROBLEME ICI
-		if(file_red && is_empty(buffer1)) {
-                        debug_printf("In condition.\n");
-                        cond = false;
-                        fact_done = true;
-                }
-		else {
-			sem_wait(&full1);
-			pthread_mutex_lock(&mutex1);
-			item = pop(&buffer1);
-			printf("item : %d.\n", item->n);
-			pthread_mutex_unlock(&mutex1);
-			sem_post(&empty1);
-		}
+	// Problem comes from here, I don't know how to solve it
+	while(!(file_red && is_empty_buffer1)) { 
+		sem_wait(&full1);
+		pthread_mutex_lock(&mutex1);
+		item = pop(&buffer1); // PROBLEM HERE : we want pop to return a just free struct
+		is_empty_buffer1 = is_empty(buffer1);
+		debug_printf("setting is_empty_buffer1 to %d.\n", is_empty_buffer1);
+		printf("item : %u.\n", SQUFOF(item->n));
+		pthread_mutex_unlock(&mutex1);
+		sem_post(&empty1);	
 	}	
 
 	pthread_exit(NULL);

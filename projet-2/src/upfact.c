@@ -23,8 +23,8 @@ sem_t full1;
 sem_t empty2;
 sem_t full2;
 
-bool file_red;
-bool fact_done;
+bool file_red = false;
+bool fact_done = false;
 
 int main(int argc, const char *argv[])
 {
@@ -121,7 +121,7 @@ int main(int argc, const char *argv[])
 
 		debug_printf("Creating calculators...\n");
 	}
-
+	
         // Récupération et libération des threads extractors
         // Remarque: on ne rentre dans la boucle que si files != 0.
         for(int i = 0; i < files; i++) {

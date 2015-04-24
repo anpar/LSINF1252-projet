@@ -16,6 +16,7 @@ void push(struct node ** stack, struct number * new)
         struct node *n = (struct node *) malloc(sizeof(struct node));
         if(n == NULL)
                 exit(EXIT_FAILURE);
+
 	struct number *toAdd = (struct number *) malloc(sizeof(struct number));
 	if(toAdd == NULL)
 		exit(EXIT_FAILURE);
@@ -33,13 +34,15 @@ struct number * pop(struct node ** stack)
 {
 	if(stack == NULL)
         	return(NULL);
-
+		
        	struct number * r;
-       	struct node * removed = *stack;
+       	
+	struct node * removed = *stack;
        	r = (*stack)->content;
+
        	*stack = (*stack)->next;
-	free(r);
-       	free(removed);
+       	//free(r) // We can't free r and then return it...
+	free(removed);
        	debug_printf("Pop: success!\n");
        	return(r);
 }
