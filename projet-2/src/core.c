@@ -121,7 +121,23 @@ int insert(struct number *new)
 
 void free_list()
 {
-	while(stack != NULL) {
+	while(list != NULL) {
 		pop(&list);
 	}
+}
+
+struct number * find_unique()
+{
+	//Create a node in order to check the list node by node
+	struct node *runner;
+	runner = list;
+
+	while(runner->next != NULL && runner->content->origin == NULL) {
+		runner = runner->next;
+	}
+
+	if(runner->content->origin != NULL) 
+		return(runner->content);
+		
+	exit(EXIT_FAILURE);
 }

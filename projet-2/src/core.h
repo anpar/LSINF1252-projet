@@ -76,13 +76,13 @@ extern int insert(struct number *);
  * This function frees the linked-list list 
  * by popping each of its nodes.
  */
-void free_list()
+void free_list(void);
 
 /*
  * This function finds the unique prime factor
  * into the global linked list of factors.
  */
-extern struct prime_factor find_unique(void);
+extern struct number * find_unique(void);
 
 #endif
 

@@ -44,13 +44,6 @@ struct number * pop(struct node ** stack)
        	return(r);
 }
 
-void free_list(struct node *stack)
-{
-	while(stack != NULL) {
-		pop(&stack);
-	}
-}
-
 void display(struct node * stack)
 {
         struct node *t;
