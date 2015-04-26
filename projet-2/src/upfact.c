@@ -5,6 +5,7 @@
 #include <sys/time.h>
 #include <pthread.h>
 #include <semaphore.h>
+#include <unistd.h>
 
 #include "io.h"
 #include "perf.h"
@@ -26,6 +27,9 @@ sem_t full2;
 bool file_read = false;
 bool fact_done = false;
 
+/*
+ * TODO : à améliorer en utilisant getopt() (voir man 3 getpop)
+ */
 int main(int argc, const char *argv[])
 {
         struct timeval tvStart, tvEnd;
@@ -134,10 +138,12 @@ int main(int argc, const char *argv[])
 
 	// Si on arrive ici, la lecture des fichier est terminée
 	debug_printf("Extraction finished.\n");
-	file_read = true;
+        file_read = true;
 	
 	for(int i = 0; i < maxthreads; i++) {
-                err = pthread_join(calculators[i], NULL);
+                // D'office pas bon mais fonctionne avec des petits fichiers pour
+                // continuer à avancer en attendant d'avoir trouver une solution..
+                err = pthread_cancel(calculators[i]);//, NULL);
                 if(err != 0)
                         exit(EXIT_FAILURE);
 
