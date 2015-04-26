@@ -23,7 +23,7 @@ sem_t full1;
 sem_t empty2;
 sem_t full2;
 
-bool file_red = false;
+bool file_read = false;
 bool fact_done = false;
 
 int main(int argc, const char *argv[])
@@ -134,7 +134,7 @@ int main(int argc, const char *argv[])
 
 	// Si on arrive ici, la lecture des fichier est terminée
 	debug_printf("Extraction finished.\n");
-	file_red = true;			
+	file_read = true;
 	
 	for(int i = 0; i < maxthreads; i++) {
                 err = pthread_join(calculators[i], NULL);
@@ -146,7 +146,7 @@ int main(int argc, const char *argv[])
 	debug_printf("Computation finished.\n");
 
 	// Lancement de l'unique thread de sauvegarde (déplacement
-	// du second buffer vers la liste chaînée
+	// du second buffer vers la liste chaînée)
 	
 	// Le thread principal lance find_unique
 

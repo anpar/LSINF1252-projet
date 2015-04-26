@@ -32,7 +32,7 @@ void push(struct node ** stack, struct number * new)
 
 struct number * pop(struct node ** stack)
 {
-	if(stack == NULL)
+	if(*stack == NULL)
         	return(NULL);
 		
        	struct number * r;
@@ -51,6 +51,8 @@ void display(struct node * stack)
 {
         struct node *t;
         t = stack;
+        
+        printf("Buffer: ");
 
         while(t != NULL) {
                 if(t->content != NULL) {

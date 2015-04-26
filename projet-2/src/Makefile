@@ -30,6 +30,6 @@ clean:
 	rm -rf *.o
 
 mr-proper: clean
-	rm upfact
-	rm *.c~
-	rm *.h~
+	rm -rf upfact
+	rm -rf *.c~
+	rm -rf *.h~

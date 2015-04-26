@@ -3,6 +3,7 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include <stdbool.h>
+ #include <unistd.h>
 
 #include "core.h"
 #include "stack.h"
@@ -31,9 +32,11 @@ extern sem_t empty2;
 extern sem_t full2;
 
 // Variables contenant les conditions d'arrêt des threads
-extern bool file_red;
+extern bool file_read;
 extern bool fact_done;
 bool is_empty_buffer1 = false;
+
+pthread_mutex_t rd;
 
 void * extract_file(void * filename) {
 	FILE *f;
@@ -48,6 +51,7 @@ void * extract_file(void * filename) {
         // Initialize new to 0 and NULL by default
 	struct number new = {0, NULL};
 	unsigned int n;
+        // Passage à remplacer pour utiliser les fichiers en BigEndian
 	fscanf(f, "%u", &n);
 	while(!feof(f))	{
 		(&new)->n = n;
@@ -69,19 +73,34 @@ void * extract_file(void * filename) {
         pthread_exit(NULL);
 }
 
+void prime_factorizer(unsigned int n, char * origin)
+{
+        unsigned int r = SQUFOF(n);
+        if(r == n) {
+                printf("%d (%s) \n", r, origin);
+        }
+        else {
+                prime_factorizer(r, origin);
+                prime_factorizer(n/r, origin);
+        }
+}
+
+// TODO : rename in calculator
 void * factorize(void * n)
 {
 	struct number *item;
 	// Problem comes from here, I don't know how to solve it
-	while(!(file_red && is_empty_buffer1)) { 
-		sem_wait(&full1);
+        while(!(file_read && is_empty_buffer1)) {
+                sem_wait(&full1);
 		pthread_mutex_lock(&mutex1);
-		item = pop(&buffer1); // PROBLEM HERE : we want pop to return a just free struct
-		is_empty_buffer1 = is_empty(buffer1);
-		debug_printf("setting is_empty_buffer1 to %d.\n", is_empty_buffer1);
-		printf("item : %u.\n", SQUFOF(item->n));
-		pthread_mutex_unlock(&mutex1);
-		sem_post(&empty1);	
+		// Partie non-terminée, il faut ajouter tous les
+                // facteurs de item dans le second buffer
+                item = pop(&buffer1);
+                printf("Popped item : %d.\n", item->n);
+                prime_factorizer(item->n, item->origin);
+		is_empty_buffer1 = (item == NULL);
+                pthread_mutex_unlock(&mutex1);
+		sem_post(&empty1);
 	}	
 
 	pthread_exit(NULL);
