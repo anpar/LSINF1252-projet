@@ -52,6 +52,7 @@ int main(int argc, const char *argv[])
 	int option_index = 0;
         int maxthreads = 24;
         int option = 0;
+        bool reading_from_stdin = false;
 
         while((option = getopt_long_only(argc, argv, "", long_options, &option_index)) != -1) {
                 switch(option) {
@@ -67,6 +68,14 @@ int main(int argc, const char *argv[])
                                 } 
                                 else if(*(long_options[option_index].flag) == 2) {
                                         debug_printf("Reading flow from stdin.\n");
+                                        // Lancement d'un thread avec extract_file
+                                        debug_printf("Creating a thread to read from sdtin.\n");
+					pthread_t stdin_reader;                                        
+					err = pthread_create(&stdin_reader, NULL, &extract_file,(void *) "/dev/stdin");
+					if(err != 0)
+						exit(EXIT_FAILURE);
+
+                                        reading_from_stdin = true;
                                 }
                                 break;
                         default:
@@ -91,7 +100,7 @@ int main(int argc, const char *argv[])
 	if(err != 0)
 		exit(EXIT_FAILURE);
 
-        if (optind >= argc) {
+        if (optind >= argc && !reading_from_stdin) {
                 usage(ENOFILE);
                 return(EXIT_FAILURE);
         }
@@ -138,10 +147,7 @@ int main(int argc, const char *argv[])
         file_read = true;
 	
 	for(int i = 0; i < maxthreads; i++) {
-                // D'office pas bon mais fonctionne avec des petits fichiers pour
-                // continuer à avancer en attendant d'avoir trouver une solution.
-                // Note : cela provoque un memory leak
-                err = pthread_cancel(calculators[i]);//, NULL);
+                err = pthread_join(calculators[i], NULL);
                 pthread_join(calculators[i], NULL);
                 if(err != 0)
                         exit(EXIT_FAILURE);
