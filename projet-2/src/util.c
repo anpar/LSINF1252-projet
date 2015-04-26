@@ -13,5 +13,8 @@ bool is_url(const char * filename)
 	if(err != 0)
 		return(false); 
 
-	return(!regexec(&regex, filename, 0, NULL, 0));		
+        bool result = !regexec(&regex, filename, 0, NULL, 0);
+	regfree(&regex);
+
+        return(result);		
 }

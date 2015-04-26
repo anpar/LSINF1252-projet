@@ -28,7 +28,7 @@ struct number {
  * representing the two buffers.
  */
 struct node {
-	struct number *content;
+	struct number content;
 	struct node *next;
 };
 

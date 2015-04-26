@@ -11,40 +11,32 @@
 #define debug_printf(fmt, ...) \
                             do { if (DEBUG) printf(fmt,## __VA_ARGS__); } while (0)
 
-void push(struct node ** stack, struct number * new)
+void push(struct node ** stack, struct number new)
 {
         struct node *n = (struct node *) malloc(sizeof(struct node));
         if(n == NULL)
                 exit(EXIT_FAILURE);
-
-	struct number *toAdd = (struct number *) malloc(sizeof(struct number));
-	if(toAdd == NULL)
-		exit(EXIT_FAILURE);
 	
-	toAdd->n = new->n;
-	toAdd->origin = new->origin;
-        n->content = toAdd;
+        n->content = new;
         n->next = *stack;
         *stack = n;
 	
 	debug_printf("Push: success!\n");
 }
 
-struct number * pop(struct node ** stack)
+bool pop(struct node ** stack, struct number * popped)
 {
 	if(*stack == NULL)
-        	return(NULL);
-		
-       	struct number * r;
-       	
-	struct node * removed = *stack;
-       	r = (*stack)->content;
+        	return(true);
+	
+        *popped = (*stack)->content;
 
+	struct node * removed = *stack;
        	*stack = (*stack)->next;
-       	//free(r) // We can't free r and then return it...
 	free(removed);
+
        	debug_printf("Pop: success!\n");
-       	return(r);
+       	return(false);
 }
 
 void display(struct node * stack)
@@ -55,10 +47,7 @@ void display(struct node * stack)
         printf("Buffer: ");
 
         while(t != NULL) {
-                if(t->content != NULL) {
-                        printf("%u (%s) - ", t->content->n, t->content->origin);
-                }
-
+                printf("%u (%s) - ", t->content.n, t->content.origin);
                 t = t->next;
         }
         

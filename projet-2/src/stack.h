@@ -4,12 +4,16 @@
 /*
  * push a new struct number on a buffer.
  */
-void push(struct node **, struct number *);
+void push(struct node **, struct number);
 
 /*
- * pop a struct number from a buffer.
+ * pop a struct number from a buffer and
+ * make number point to this struct.
+ * Additionnally, this functions returns
+ * true if the stack is empty and false
+ * either.
  */
-struct number * pop(struct node **);
+bool pop(struct node **, struct number *);
 
 /*
  * display a buffer.

@@ -58,8 +58,8 @@ void * extract_file(void * filename) {
 		(&new)->origin = file;
 		sem_wait(&empty1); // Attendre d'un slot libre
 	        pthread_mutex_lock(&mutex1);
-		push(&buffer1, &new);
-                //display(buffer1);
+		push(&buffer1, new);
+                display(buffer1);
 		pthread_mutex_unlock(&mutex1);
 		sem_post(&full1); // Il y a un slot rempli en plus
 		fscanf(f, "%u", &n);
@@ -82,10 +82,10 @@ void prime_factorizer(unsigned int n, char * origin)
                 (&new)->origin = origin;
                 sem_wait(&empty2); // Attendre d'un slot de libre
                 pthread_mutex_lock(&mutex2);
-                push(&buffer2, &new);
+                push(&buffer2, new);
                 //display(buffer2);
                 pthread_mutex_unlock(&mutex2);
-                sem_post(&full2); // Il y a un slot rempli de bus
+                sem_post(&full2); // Il y a un slot rempli de plus
         }
         else {
                 prime_factorizer(r, origin);
@@ -93,28 +93,27 @@ void prime_factorizer(unsigned int n, char * origin)
         }
 }
 
-// TODO : rename in calculator
 void * factorize(void * n)
 {
-	struct number *item;
+	struct number *item = (struct number *) malloc(sizeof(struct number));
 	// Problem comes from here, I don't know how to solve it
         while(!(file_read && is_empty_buffer1)) {
                 sem_wait(&full1); // Attente d'un slot rempli
 		pthread_mutex_lock(&mutex1);
 		// Partie non-terminée, il faut ajouter tous les
                 // facteurs de item dans le second buffer
-                item = pop(&buffer1);
+                is_empty_buffer1 = pop(&buffer1, item);
                 debug_printf("Popped item : %d.\n", item->n);
                 prime_factorizer(item->n, item->origin);
-		is_empty_buffer1 = (item == NULL); // is_empty in stack.c useless
                 pthread_mutex_unlock(&mutex1);
 		sem_post(&empty1); // Il y a un slot libre en plus
 	}
 
+        free(item);
 	pthread_exit(NULL);
 }
 
-
+/* In comment again since I modified struct number
 int insert(struct number *new)
 {
 	// Create a structure number that can be inserted
@@ -191,4 +190,4 @@ struct number * find_unique()
 		return(runner->content);
 		
 	exit(EXIT_FAILURE);
-}
+}*/

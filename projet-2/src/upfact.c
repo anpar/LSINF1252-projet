@@ -6,6 +6,7 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include <unistd.h>
+#include <getopt.h>
 
 #include "io.h"
 #include "perf.h"
@@ -27,14 +28,11 @@ sem_t full2;
 bool file_read = false;
 bool fact_done = false;
 
-/*
- * TODO : à améliorer en utilisant getopt() (voir man 3 getpop)
- */
 int main(int argc, const char *argv[])
 {
         struct timeval tvStart, tvEnd;
         int err;
-
+        
         err = gettimeofday(&tvStart, NULL);
         if(err != 0)
                 exit(EXIT_FAILURE);
@@ -43,41 +41,40 @@ int main(int argc, const char *argv[])
                 usage(EARGS);
                 return(EXIT_FAILURE);
         }
+	
+        int myflag;
+	struct option long_options[] = {
+		{"maxthreads", required_argument, &myflag, 1},
+		{"stdin", no_argument, &myflag, 2},
+		{NULL, 0, NULL, 0}
+	};
 
-        // Default value for maxthreads
+	int option_index = 0;
         int maxthreads = 24;
-        // Variable to count the number of files
-        int files = 0;
-        // Array to store filenames (max argc files)
-        const char *filenames[argc];
-        for(int i = 1; i < argc; i++) {
-                if(strcmp(argv[i], "-maxthreads") == 0) {
-                        if(i > argc - 2) {
-                                usage(ETHREADS);
-                                return(EXIT_FAILURE);
-                        }
+        int option = 0;
 
-                        int tmp = atoi(argv[i+1]);
-                        if(tmp <= 0) {
-                                usage(ETHREADS);
-                                return(EXIT_FAILURE);
-                        }
-
-                        maxthreads = tmp;
-                        i++;
-                        debug_printf("Setting maxthreads to %d.\n", maxthreads);
-                }
-                else if(strcmp(argv[i], "-stdin") == 0) {
-                        debug_printf("Reading flow from stdin.\n");
-                }
-                else {
-                        filenames[files] = argv[i];
-                        files++;
-                        debug_printf("File detected : %s.\n", argv[i]);
-                }
+        while((option = getopt_long_only(argc, argv, "", long_options, &option_index)) != -1) {
+                switch(option) {
+                        case 0:
+                                if(*(long_options[option_index].flag) == 1) {
+                                        if(atoi(optarg) <= 0) {
+                                                usage(ETHREADS);
+                                                return(EXIT_FAILURE);
+                                        }
+                                        
+                                        debug_printf("Setting maxthreads option to %s.\n", optarg);
+                                        maxthreads = atoi(optarg);
+                                } 
+                                else if(*(long_options[option_index].flag) == 2) {
+                                        debug_printf("Reading flow from stdin.\n");
+                                }
+                                break;
+                        default:
+                                exit(EXIT_FAILURE);
+                } 
         }
         
-	// Semaphores initialization
+	// Semaphores initialization (wrap all this in a function?)
         err = sem_init(&empty1, 0, maxthreads);
         if(err != 0)
                 exit(EXIT_FAILURE);
@@ -94,28 +91,28 @@ int main(int argc, const char *argv[])
 	if(err != 0)
 		exit(EXIT_FAILURE);
 
-        pthread_t extractors[files];
-        if(files == 0) {
+        if (optind >= argc) {
                 usage(ENOFILE);
                 return(EXIT_FAILURE);
         }
-        else {
-               // pthread_t extractors[files];
-                for(int i = 0; i < files; i++) {
-                       if(is_url(filenames[i])) {
-                                // Lancement d'un thread avec extract_url
-                                debug_printf("Creating a thread to read %s (URL).\n", filenames[i]);
-                       }
-                       else {
-                                // Lancement d'un thread avec extract_file
-                                debug_printf("Creating a thread to read %s (local file).\n", filenames[i]);
-                                err = pthread_create(&(extractors[i]), NULL, &extract_file,(void *) filenames[i]);
-                                if(err != 0)
-                                        exit(EXIT_FAILURE);
-                       }
+
+        pthread_t extractors[argc-optind];
+        for(int i = 0; optind < argc; i++) {
+                if(is_url(argv[optind])) {
+                        // Lancement d'un thread avec extract_url
+                        debug_printf("Creating a thread to read %s (URL).\n", argv[optind]);
                 }
+                else {
+                        // Lancement d'un thread avec extract_file
+                        debug_printf("Creating a thread to read %s (local file).\n", argv[optind]);
+                        err = pthread_create(&(extractors[i]), NULL, &extract_file,(void *) argv[optind]);
+                        if(err != 0)
+                                exit(EXIT_FAILURE);
+                }
+
+                optind++;
         }
-        
+
 	// Lancement des threads de calculs
 	pthread_t calculators[maxthreads];
 	for(int i = 0; i < maxthreads; i++) {
@@ -128,12 +125,12 @@ int main(int argc, const char *argv[])
 	
         // Récupération et libération des threads extractors
         // Remarque: on ne rentre dans la boucle que si files != 0.
-        for(int i = 0; i < files; i++) {
+        for(int i = 0; i < argc-optind; i++) {
                 err = pthread_join(extractors[i], NULL);
                 if(err != 0)
                         exit(EXIT_FAILURE);
                 
-                debug_printf("Extractor on %s has terminated.\n", filenames[i]);
+                debug_printf("Extractor has terminated.\n");
         }
 
 	// Si on arrive ici, la lecture des fichier est terminée
@@ -142,8 +139,10 @@ int main(int argc, const char *argv[])
 	
 	for(int i = 0; i < maxthreads; i++) {
                 // D'office pas bon mais fonctionne avec des petits fichiers pour
-                // continuer à avancer en attendant d'avoir trouver une solution..
+                // continuer à avancer en attendant d'avoir trouver une solution.
+                // Note : cela provoque un memory leak
                 err = pthread_cancel(calculators[i]);//, NULL);
+                pthread_join(calculators[i], NULL);
                 if(err != 0)
                         exit(EXIT_FAILURE);
 
@@ -164,4 +163,21 @@ int main(int argc, const char *argv[])
 	printf("result\n");
         printf("filename\n");
         printf("%ldus\n", timeval_diff(&tvEnd, &tvStart));
+
+        // Destroy all semaphores (wrap this in a function?)
+        err = sem_destroy(&empty1);
+        if(err != 0)
+                return(EXIT_FAILURE);
+
+        err = sem_destroy(&empty2);
+        if(err != 0)
+                return(EXIT_FAILURE);
+
+        err = sem_destroy(&full1);
+        if(err != 0)
+                return(EXIT_FAILURE);
+
+        err = sem_destroy(&full2);
+        if(err !=0)
+                return(EXIT_FAILURE);
 }
