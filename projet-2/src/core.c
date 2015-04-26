@@ -113,23 +113,15 @@ void * factorize(void * n)
 	pthread_exit(NULL);
 }
 
-/* In comment again since I modified struct number
-int insert(struct number *new)
+int insert(struct number new)
 {
-	// Create a structure number that can be inserted
-	struct number *toAdd = (struct number *) malloc(sizeof(struct number));
-	if(toAdd == NULL)
-		exit(EXIT_FAILURE);
-	toAdd->n = new->n;
-	toAdd->origin = new->origin;
-
 	//Create a node in order to check the list node by node
 	struct node *runner;
 	runner = list;
 
 	//Create the node containing the number that will be inserted
 	struct node *nodenew;
-	nodenew->content = toAdd;	
+	nodenew->content = new;	
 
 	// If the list is EMPTY
 	if(list == NULL) {
@@ -137,14 +129,14 @@ int insert(struct number *new)
 	}
 
 	// If new has to be inserted as the FIRST NODE
-	if(runner->content->n > new->n) { 
+	if(runner->content.n > new.n) { 
 		nodenew->next = runner;
 		list = nodenew;
 	}
 
 	// Run in the list until runner is just BEFORE
 	//where it has to be inserted (or at the end)
-	while(runner->next != NULL && runner->next->content->n < new->n) {
+	while(runner->next != NULL && runner->next->content.n < new.n) {
 		runner = runner->next;	
 	}
 
@@ -155,8 +147,8 @@ int insert(struct number *new)
 	}
 
 	// Inside the list, if new->n is ALREADY IN THE LIST
-	else if(runner->next->content->n == new->n) { 
-		runner->next->content->origin = NULL; 
+	else if(runner->next->content.n == new.n) { 
+		runner->next->content.origin = NULL; 
 	}
 
 	// Inside the list, if new->n ISN'T IN THE LIST YET
@@ -172,22 +164,24 @@ int insert(struct number *new)
 void free_list()
 {
 	while(list != NULL) {
-		pop(&list);
+		struct number *removed;
+		pop(&list, removed);
+		free(removed);
 	}
 }
 
-struct number * find_unique()
+struct number find_unique()
 {
 	//Create a node in order to check the list node by node
 	struct node *runner;
 	runner = list;
 
-	while(runner->next != NULL && runner->content->origin == NULL) {
+	while(runner->next != NULL && runner->content.origin == NULL) {
 		runner = runner->next;
 	}
 
-	if(runner->content->origin != NULL) 
+	if(runner->content.origin != NULL) 
 		return(runner->content);
 		
 	exit(EXIT_FAILURE);
-}*/
+}
