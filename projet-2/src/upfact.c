@@ -142,8 +142,10 @@ int main(int argc, const char *argv[])
 	
 	for(int i = 0; i < maxthreads; i++) {
                 // D'office pas bon mais fonctionne avec des petits fichiers pour
-                // continuer à avancer en attendant d'avoir trouver une solution..
+                // continuer à avancer en attendant d'avoir trouver une solution.
+                // Note : cela provoque un memory leak
                 err = pthread_cancel(calculators[i]);//, NULL);
+                pthread_join(calculators[i], NULL);
                 if(err != 0)
                         exit(EXIT_FAILURE);
 
@@ -164,4 +166,20 @@ int main(int argc, const char *argv[])
 	printf("result\n");
         printf("filename\n");
         printf("%ldus\n", timeval_diff(&tvEnd, &tvStart));
+
+        err = sem_destroy(&empty1);
+        if(err != 0)
+                return(EXIT_FAILURE);
+
+        err = sem_destroy(&empty2);
+        if(err != 0)
+                return(EXIT_FAILURE);
+
+        err = sem_destroy(&full1);
+        if(err != 0)
+                return(EXIT_FAILURE);
+
+        err = sem_destroy(&full2);
+        if(err !=0)
+                return(EXIT_FAILURE);
 }
