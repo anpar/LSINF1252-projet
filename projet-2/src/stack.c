@@ -55,8 +55,3 @@ void display(struct node * stack)
 
 	debug_printf("Display: success!\n");
 }
-
-bool is_empty(struct node * buffer)
-{
-	return(buffer == NULL);
-}

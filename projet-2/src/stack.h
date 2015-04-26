@@ -20,10 +20,4 @@ bool pop(struct node **, struct number *);
  */
 void display(struct node *);
 
-
-/*
- * check if the buffer is empty
- */
-bool is_empty(struct node *);
-
 #endif
