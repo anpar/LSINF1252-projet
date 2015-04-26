@@ -59,7 +59,7 @@ void * extract_file(void * filename) {
 		sem_wait(&empty1); // Attendre d'un slot libre
 	        pthread_mutex_lock(&mutex1);
 		push(&buffer1, new);
-                display(buffer1);
+                //display(buffer1);
 		pthread_mutex_unlock(&mutex1);
 		sem_post(&full1); // Il y a un slot rempli en plus
 		fscanf(f, "%u", &n);
@@ -83,7 +83,7 @@ void prime_factorizer(unsigned int n, char * origin)
                 sem_wait(&empty2); // Attendre d'un slot de libre
                 pthread_mutex_lock(&mutex2);
                 push(&buffer2, new);
-                //display(buffer2);
+                display(buffer2);
                 pthread_mutex_unlock(&mutex2);
                 sem_post(&full2); // Il y a un slot rempli de plus
         }
