@@ -115,9 +115,18 @@ void * factorize(void * n)
                         is_empty_buffer1 = pop(&buffer1, item);
                         if(!is_empty_buffer1)
                                 prime_factorizer(item->n, item->origin);
+                        debug_printf("cond = %d.\n", is_empty_buffer1);
                         pthread_mutex_unlock(&mutex1);
 		        sem_post(&empty1); // Il y a un slot libre en plus              
+                        sem_getvalue(&full1, &sval);
+                        printf("full : %d.\n", sval);
+                        sem_getvalue(&empty1, &sval);
+                        printf("empty : %d.\n", sval);
                 }
+
+                pthread_mutex_lock(&mutex1);
+                is_empty_buffer1 = pop(&buffer1, item);
+                pthread_mutex_unlock(&mutex1);
         }
        
         sem_getvalue(&full1, &sval);
