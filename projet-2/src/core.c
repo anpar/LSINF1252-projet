@@ -109,13 +109,14 @@ void * factorize(void * n)
                 // exécute encore la boucle. S'il y en a un
                 // on rentre dans le bloc suivant.
                 if(!(err != 0 && errno == EAGAIN)) {
-                        sem_getvalue(&full1, &sval);
+                        //sem_getvalue(&full1, &sval);
                         debug_printf("\nPassed.\n");
 		        pthread_mutex_lock(&mutex1);
                         is_empty_buffer1 = pop(&buffer1, item);
                         if(!is_empty_buffer1)
-                                prime_factorizer(item->n, item->origin);
-                        debug_printf("cond = %d.\n", is_empty_buffer1);
+                        	prime_factorizer(item->n, item->origin);
+                        
+			//debug_printf("cond = %d.\n", is_empty_buffer1);
                         pthread_mutex_unlock(&mutex1);
 		        sem_post(&empty1); // Il y a un slot libre en plus              
                         sem_getvalue(&full1, &sval);
@@ -123,10 +124,12 @@ void * factorize(void * n)
                         sem_getvalue(&empty1, &sval);
                         printf("empty : %d.\n", sval);
                 }
-
-                pthread_mutex_lock(&mutex1);
-                is_empty_buffer1 = pop(&buffer1, item);
-                pthread_mutex_unlock(&mutex1);
+			
+			debug_printf("Failed\n");
+               		pthread_mutex_lock(&mutex1);
+               		is_empty_buffer1 = pop(&buffer1, item);
+               		pthread_mutex_unlock(&mutex1);
+		
         }
        
         sem_getvalue(&full1, &sval);
