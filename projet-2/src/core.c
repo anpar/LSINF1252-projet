@@ -3,7 +3,8 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include <stdbool.h>
- #include <unistd.h>
+#include <unistd.h>
+#include <errno.h>
 
 #include "core.h"
 #include "stack.h"
@@ -83,7 +84,7 @@ void prime_factorizer(unsigned int n, char * origin)
                 sem_wait(&empty2); // Attendre d'un slot de libre
                 pthread_mutex_lock(&mutex2);
                 push(&buffer2, new);
-                //display(buffer2);
+                display(buffer2);
                 pthread_mutex_unlock(&mutex2);
                 sem_post(&full2); // Il y a un slot rempli de plus
         }
@@ -95,26 +96,35 @@ void prime_factorizer(unsigned int n, char * origin)
 
 void * factorize(void * n)
 {
+        int err;
         int sval = 0;
 	struct number *item = (struct number *) malloc(sizeof(struct number));
 	// Problem comes from here, I don't know how to solve it
         while(!(file_read && is_empty_buffer1)) {
-                debug_printf("1: full->val : %d.\n", sval);
-                sem_wait(&full1); // Attente d'un slot rempli
-                sem_getvalue(&full1, &sval);
-                debug_printf("2: full->val : %d.\n", sval);
-		pthread_mutex_lock(&mutex1);
-                sem_getvalue(&full1, &sval);
-                is_empty_buffer1 = pop(&buffer1, item);
-                if(!is_empty_buffer1)
-                        prime_factorizer(item->n, item->origin);
-                pthread_mutex_unlock(&mutex1);
-		sem_post(&empty1); // Il y a un slot libre en plus
-	}
-        
+                //debug_printf("1: full->val : %d.\n", sval);
+                errno = 0;
+                err = sem_trywait(&full1); 
+                // Attente d'un slot rempli, s'il il n'y en
+                // a pas, on passe le bloc suivant et on
+                // exécute encore la boucle. S'il y en a un
+                // on rentre dans le bloc suivant.
+                if(!(err != 0 && errno == EAGAIN)) {
+                        sem_getvalue(&full1, &sval);
+                        debug_printf("\nPassed.\n");
+		        pthread_mutex_lock(&mutex1);
+                        is_empty_buffer1 = pop(&buffer1, item);
+                        if(!is_empty_buffer1)
+                                prime_factorizer(item->n, item->origin);
+                        pthread_mutex_unlock(&mutex1);
+		        sem_post(&empty1); // Il y a un slot libre en plus              
+                }
+        }
+       
         sem_getvalue(&full1, &sval);
-        debug_printf("full->val : %d (outside loop).\n", sval);
-        debug_printf("Leaving factorize.\n");
+        printf("full : %d.\n", sval);
+        sem_getvalue(&empty1, &sval);
+        printf("empty : %d.\n", sval);
+
         free(item);
 	pthread_exit(NULL);
 }
