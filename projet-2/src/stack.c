@@ -4,7 +4,7 @@
 #include "core.h"
 #include "stack.h"
 
-#define DEBUG false
+#define DEBUG true
 /* 
  * This macro requires c99.
  */
@@ -13,19 +13,23 @@
 
 void push(struct node ** stack, struct number new)
 {
-        struct node *n = (struct node *) malloc(sizeof(struct node));
-        if(n == NULL)
+        debug_printf("In push\n");
+        struct node * n = (struct node *) malloc(sizeof(struct node));
+        debug_printf("In push, after malloc\n");
+        if(n == NULL) {
+                debug_printf("Malloc failed in push.\n");
                 exit(EXIT_FAILURE);
-	
+        }
+
         n->content = new;
         n->next = *stack;
         *stack = n;
-	
-	debug_printf("Push: success!\n");
 }
 
 bool pop(struct node ** stack, struct number * popped)
 {
+        debug_printf("In pop\n");
+
 	if(*stack == NULL)
         	return(true);
 	
@@ -34,8 +38,6 @@ bool pop(struct node ** stack, struct number * popped)
 	struct node * removed = *stack;
        	*stack = (*stack)->next;
 	free(removed);
-
-       	debug_printf("Pop: success!\n");
        	return(false);
 }
 

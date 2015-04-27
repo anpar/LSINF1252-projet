@@ -82,7 +82,7 @@ void free_list(void);
  * This function finds the unique prime factor
  * into the global linked list of factors.
  */
-extern struct number find_unique(void);
+extern int find_unique(struct number *);
 
 #endif
 

@@ -41,6 +41,7 @@ bool is_empty_buffer2 = false;
 extern pthread_mutex_t rd;
 
 void * extract_file(void * filename) {
+        debug_printf("In extract_file.\n");
 	FILE *f;
 	int err;
         char *file = (char *) filename;
@@ -76,6 +77,7 @@ void * extract_file(void * filename) {
 
 void prime_factorizer(unsigned int n, char * origin)
 {
+        debug_printf("In prime_factorizer.\n");
         unsigned int r = SQUFOF(n);
         struct number new = {0, NULL};
         if(r == n) {
@@ -84,6 +86,7 @@ void prime_factorizer(unsigned int n, char * origin)
                 sem_wait(&empty2); // Attendre d'un slot de libre
                 pthread_mutex_lock(&mutex2);
                 push(&buffer2, new);
+                display(buffer2);
                 pthread_mutex_unlock(&mutex2);
                 sem_post(&full2); // Il y a un slot rempli de plus
         }
@@ -95,6 +98,7 @@ void prime_factorizer(unsigned int n, char * origin)
 
 void * factorize(void * n)
 {
+        debug_printf("In factorize.\n");
         int err;
 	struct number *item = (struct number *) malloc(sizeof(struct number));
         while(!(file_read && is_empty_buffer1)) {
@@ -125,7 +129,8 @@ void * factorize(void * n)
 
 void insert(struct number * new_number)
 {
-        struct node * new;
+        debug_printf("In insert\n");
+        struct node * new = (struct node *) malloc(sizeof(struct node));
         new->content = *new_number;
         new->next = NULL;
         struct node * current;
@@ -152,7 +157,6 @@ void insert(struct number * new_number)
                         new->next = current->next;
                         current->next = new;
                 }
-
         }
 }
 
@@ -168,6 +172,7 @@ void print_list()
 
 void * save_data(void * n) 
 {
+        debug_printf("In save_data\n");
         int err;
 	struct number *item = (struct number *) malloc(sizeof(struct number));
         while(!(fact_done && is_empty_buffer2)) {
@@ -199,13 +204,11 @@ void * save_data(void * n)
 void free_list()
 {
 	while(list != NULL) {
-		struct number *removed;
-		pop(&list, removed);
-		free(removed);
+		pop(&list, NULL);
 	}
 }
 
-struct number find_unique()
+int find_unique(struct number * unique)
 {
 	//Create a node in order to check the list node by node
 	struct node *runner;
@@ -215,8 +218,9 @@ struct number find_unique()
 		runner = runner->next;
 	}
 
-	if(runner->content.origin != NULL) 
-		return(runner->content);
-		
-	exit(EXIT_FAILURE);
+	if(runner->content.origin != NULL) { 
+		*unique = runner->content;
+	        return(EXIT_SUCCESS);
+        }
+	return(EXIT_FAILURE);
 }

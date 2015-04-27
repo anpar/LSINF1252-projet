@@ -13,7 +13,7 @@
 #include "util.h"
 #include "core.h"
 
-#define DEBUG false
+#define DEBUG true
 /* 
  * This macro requires c99.
  */
@@ -24,11 +24,12 @@ sem_t empty1;
 sem_t full1;
 sem_t empty2;
 sem_t full2;
+struct node * list;
 
 bool file_read = false;
 bool fact_done = false;
 
-int main(int argc, const char *argv[])
+int main(int argc, char *argv[])
 {
         struct timeval tvStart, tvEnd;
         int err;
@@ -52,7 +53,6 @@ int main(int argc, const char *argv[])
 	int option_index = 0;
         int maxthreads = 24;
         int option = 0;
-        bool reading_from_stdin = false;
 
         while((option = getopt_long_only(argc, argv, "", long_options, &option_index)) != -1) {
                 switch(option) {
@@ -74,8 +74,6 @@ int main(int argc, const char *argv[])
 					err = pthread_create(&stdin_reader, NULL, &extract_file,(void *) "/dev/stdin");
 					if(err != 0)
 						exit(EXIT_FAILURE);
-
-                                        reading_from_stdin = true;
                                 }
                                 break;
                         default:
@@ -172,7 +170,12 @@ int main(int argc, const char *argv[])
 
 	// Le thread principal lance find_unique
         debug_printf("Starting find_unique().\n");
-        struct number result = find_unique(); 
+        struct number result; 
+        err = find_unique(&result);
+        if(err == EXIT_FAILURE) {
+                debug_printf("No unique prime factor.\n");
+                return(EXIT_FAILURE);
+        }
         debug_printf("find_unique() done.\n");
 
         err = gettimeofday(&tvEnd, NULL);
