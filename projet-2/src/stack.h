@@ -20,4 +20,9 @@ bool pop(struct node **, struct number *);
  */
 void display(struct node *);
 
+/*
+ * check if the stack is empty
+ */
+bool is_empty(struct node *);
+
 #endif

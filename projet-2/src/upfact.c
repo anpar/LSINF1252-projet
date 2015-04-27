@@ -13,7 +13,7 @@
 #include "util.h"
 #include "core.h"
 
-#define DEBUG true
+#define DEBUG false
 /* 
  * This macro requires c99.
  */
@@ -100,7 +100,7 @@ int main(int argc, const char *argv[])
 	if(err != 0)
 		exit(EXIT_FAILURE);
 
-        if (optind >= argc && !reading_from_stdin) {
+        if (optind >= argc) {
                 usage(ENOFILE);
                 return(EXIT_FAILURE);
         }
@@ -132,6 +132,14 @@ int main(int argc, const char *argv[])
 		debug_printf("Creating calculators...\n");
 	}
 	
+	// Lancement de l'unique thread de sauvegarde (déplacement
+	// du second buffer vers la liste chaînée)
+        pthread_t saver;
+        debug_printf("Starting data saver.\n");
+	err = pthread_create(&saver, NULL, &save_data, NULL); 
+        if(err != 0)
+                exit(EXIT_FAILURE);
+
         // Récupération et libération des threads extractors
         // Remarque: on ne rentre dans la boucle que si files != 0.
         for(int i = 0; i < argc-optind; i++) {
@@ -155,19 +163,25 @@ int main(int argc, const char *argv[])
                 debug_printf("Calculator has terminated.\n");
         }
 	debug_printf("Computation finished.\n");
+        fact_done = true;
 
-	// Lancement de l'unique thread de sauvegarde (déplacement
-	// du second buffer vers la liste chaînée)
-	
+        err = pthread_join(saver, NULL);
+        if(err != 0)
+                exit(EXIT_FAILURE);
+        debug_printf("Data sever has terminated.\n");
+
 	// Le thread principal lance find_unique
+        debug_printf("Starting find_unique().\n");
+        struct number result = find_unique(); 
+        debug_printf("find_unique() done.\n");
 
         err = gettimeofday(&tvEnd, NULL);
         if(err != 0)
                 return(EXIT_FAILURE);
 
         // Output
-	printf("result\n");
-        printf("filename\n");
+	printf("%d\n", result.n);
+        printf("%s\n", result.origin);
         printf("%ldus\n", timeval_diff(&tvEnd, &tvStart));
 
         // Destroy all semaphores (wrap this in a function?)
