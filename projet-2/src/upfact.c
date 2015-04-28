@@ -53,6 +53,7 @@ int main(int argc, char *argv[])
 	int option_index = 0;
         int maxthreads = 24;
         int option = 0;
+        bool read_from_stdin = false;
 
         while((option = getopt_long_only(argc, argv, "", long_options, &option_index)) != -1) {
                 switch(option) {
@@ -74,6 +75,8 @@ int main(int argc, char *argv[])
 					err = pthread_create(&stdin_reader, NULL, &extract_file,(void *) "/dev/stdin");
 					if(err != 0)
 						exit(EXIT_FAILURE);
+
+                                        read_from_stdin = true;
                                 }
                                 break;
                         default:
@@ -98,7 +101,7 @@ int main(int argc, char *argv[])
 	if(err != 0)
 		exit(EXIT_FAILURE);
 
-        if (optind >= argc) {
+        if (optind >= argc && !read_from_stdin) {
                 usage(ENOFILE);
                 return(EXIT_FAILURE);
         }
@@ -107,6 +110,8 @@ int main(int argc, char *argv[])
         unsigned int filec = argc-optind;
         pthread_t extractors[filec];
         for(int i = 0; optind < argc; i++) {
+                // FIX : I heard that we can avoid checking if it's url because libcurl
+                // allows us to read URL exactly like local file.
                 if(is_url(argv[optind])) {
                         // Lancement d'un thread avec extract_url
                         debug_printf("Creating a thread to read %s (URL).\n", argv[optind]);
