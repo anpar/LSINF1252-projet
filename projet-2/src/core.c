@@ -248,10 +248,14 @@ int find_unique(struct number * unique)
 
 	if(runner->content.origin != NULL) { 
 		*unique = runner->content;
-                //free(list);
+                while(runner != NULL) {
+                        tmp = runner;
+                        runner = runner->next;
+                        free(tmp);
+                }
 	        return(EXIT_SUCCESS);
         }
 
-        //free(list);
+        free(runner);
 	return(EXIT_FAILURE);
 }
