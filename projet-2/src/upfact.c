@@ -180,6 +180,7 @@ int main(int argc, char *argv[])
         struct number result; 
         err = find_unique(&result);
         if(err == EXIT_FAILURE) {
+                free(list);
                 debug_printf("No unique prime factor.\n");
                 return(EXIT_FAILURE);
         }
@@ -210,4 +211,6 @@ int main(int argc, char *argv[])
         err = sem_destroy(&full2);
         if(err !=0)
                 return(EXIT_FAILURE);
+
+        return(EXIT_SUCCESS);
 }

@@ -141,6 +141,9 @@ void insert(struct number * new_number)
 {
         //debug_printf("In insert\n");
         struct node * new = (struct node *) malloc(sizeof(struct node));
+        if(new == NULL)
+                exit(EXIT_FAILURE);
+
         new->content = *new_number;
         new->next = NULL;
         struct node * current;
@@ -150,6 +153,7 @@ void insert(struct number * new_number)
         }
         else if(list->content.n == new->content.n) {
                 list->content.origin = NULL;
+                free(new);
         }
         else {
                 current = list;
@@ -162,6 +166,7 @@ void insert(struct number * new_number)
                 }
                 else if(current->next->content.n == new->content.n) {
                         current->next->content.origin = NULL;
+                        free(new);
                 }
                 else {
                         new->next = current->next;
@@ -215,8 +220,15 @@ void * save_data(void * n)
 
 void free_list()
 {
+        struct node * tmp1;
+        struct number * tmp2;
+
 	while(list != NULL) {
-		pop(&list, NULL);
+		tmp1 = list;
+                tmp2 = &(list->content);
+                list = list->next;
+                free(tmp1);
+                free(tmp2);
 	}
 }
 
@@ -226,13 +238,20 @@ int find_unique(struct number * unique)
 	struct node *runner;
 	runner = list;
 
+        struct node *tmp;
+
 	while(runner->next != NULL && runner->content.origin == NULL) {
-		runner = runner->next;
+		tmp = runner;
+                runner = runner->next;
+                free(tmp);
 	}
 
 	if(runner->content.origin != NULL) { 
 		*unique = runner->content;
+                //free(list);
 	        return(EXIT_SUCCESS);
         }
+
+        //free(list);
 	return(EXIT_FAILURE);
 }
