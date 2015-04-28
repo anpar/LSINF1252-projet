@@ -4,7 +4,7 @@
 #include "core.h"
 #include "stack.h"
 
-#define DEBUG true
+#define DEBUG false
 /* 
  * This macro requires c99.
  */
@@ -45,11 +45,9 @@ void display(struct node * stack)
 {
         struct node *t;
         t = stack;
-        
-        printf("Buffer: ");
 
         while(t != NULL) {
-                printf("%u (%s) - ", t->content.n, t->content.origin);
+                printf("%u - ", t->content.n);
                 t = t->next;
         }
         

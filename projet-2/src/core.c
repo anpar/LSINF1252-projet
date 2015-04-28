@@ -41,7 +41,7 @@ bool is_empty_buffer2 = false;
 extern pthread_mutex_t rd;
 
 void * extract_file(void * filename) {
-        debug_printf("In extract_file.\n");
+        //debug_printf("In extract_file.\n");
 	FILE *f;
 	int err;
         char *file = (char *) filename;
@@ -57,11 +57,13 @@ void * extract_file(void * filename) {
         // Passage à remplacer pour utiliser les fichiers en BigEndian
 	fscanf(f, "%u", &n);
 	while(!feof(f))	{
+                debug_printf("In the loop of extract_file.\n");
 		(&new)->n = n;
 		(&new)->origin = file;
 		sem_wait(&empty1); // Attendre d'un slot libre
 	        pthread_mutex_lock(&mutex1);
 		push(&buffer1, new);
+                printf("Buffer 1 (extract_file) : "); display(buffer1);
 		pthread_mutex_unlock(&mutex1);
 		sem_post(&full1); // Il y a un slot rempli en plus
 		fscanf(f, "%u", &n);
@@ -71,13 +73,14 @@ void * extract_file(void * filename) {
 	if(err != 0) {
 		fprintf(stderr, "Error while closing %s.\n", file);
 	}
-        
+       
+        debug_printf("Leaving extract_file.\n");
         pthread_exit(NULL);
 }
 
 void prime_factorizer(unsigned int n, char * origin)
 {
-        debug_printf("In prime_factorizer.\n");
+        //debug_printf("In prime_factorizer.\n");
         unsigned int r = SQUFOF(n);
         struct number new = {0, NULL};
         if(r == n) {
@@ -86,7 +89,7 @@ void prime_factorizer(unsigned int n, char * origin)
                 sem_wait(&empty2); // Attendre d'un slot de libre
                 pthread_mutex_lock(&mutex2);
                 push(&buffer2, new);
-                display(buffer2);
+                printf("Buffer 2 (prime_factorizer) : "); display(buffer2);
                 pthread_mutex_unlock(&mutex2);
                 sem_post(&full2); // Il y a un slot rempli de plus
         }
@@ -98,7 +101,7 @@ void prime_factorizer(unsigned int n, char * origin)
 
 void * factorize(void * n)
 {
-        debug_printf("In factorize.\n");
+        //debug_printf("In factorize.\n");
         int err;
 	struct number *item = (struct number *) malloc(sizeof(struct number));
         while(!(file_read && is_empty_buffer1)) {
@@ -111,8 +114,15 @@ void * factorize(void * n)
                 if(!(err != 0 && errno == EAGAIN)) {
 		        pthread_mutex_lock(&mutex1);
                         is_empty_buffer1 = pop(&buffer1, item);
+                        printf("Buffer 1 (factorize) : "); display(buffer1);
+                        //pthread_mutex_unlock(&mutex1);
+                        //sem_post(&empty1);
+                        
                         if(!is_empty_buffer1)
                                 prime_factorizer(item->n, item->origin);
+                        // FIX : I move the two following lines above because prime_factorize
+                        // doesn't need to between those mutes/sem. Note : seems legit to me
+                        // but causes annoying bug in some cases... Let's create an issue on GitHub
                         pthread_mutex_unlock(&mutex1);
 		        sem_post(&empty1); // Il y a un slot libre en plus              
                 }
@@ -129,7 +139,7 @@ void * factorize(void * n)
 
 void insert(struct number * new_number)
 {
-        debug_printf("In insert\n");
+        //debug_printf("In insert\n");
         struct node * new = (struct node *) malloc(sizeof(struct node));
         new->content = *new_number;
         new->next = NULL;
@@ -172,7 +182,7 @@ void print_list()
 
 void * save_data(void * n) 
 {
-        debug_printf("In save_data\n");
+        //debug_printf("In save_data\n");
         int err;
 	struct number *item = (struct number *) malloc(sizeof(struct number));
         while(!(fact_done && is_empty_buffer2)) {
@@ -185,8 +195,10 @@ void * save_data(void * n)
                 if(!(err != 0 && errno == EAGAIN)) {
 		        pthread_mutex_lock(&mutex2);
                         is_empty_buffer2 = pop(&buffer2, item);
+                        printf("Buffer 2 (save_data) :"); display(buffer2);
                         if(!is_empty_buffer2)
                                 insert(item);
+                        printf("List : "); print_list();
                         pthread_mutex_unlock(&mutex2);
 		        sem_post(&empty2); // Il y a un slot libre en plus              
                 }

@@ -102,8 +102,10 @@ int main(int argc, char *argv[])
                 usage(ENOFILE);
                 return(EXIT_FAILURE);
         }
-
-        pthread_t extractors[argc-optind];
+        
+        // Number of files
+        unsigned int filec = argc-optind;
+        pthread_t extractors[filec];
         for(int i = 0; optind < argc; i++) {
                 if(is_url(argv[optind])) {
                         // Lancement d'un thread avec extract_url
@@ -140,7 +142,7 @@ int main(int argc, char *argv[])
 
         // Récupération et libération des threads extractors
         // Remarque: on ne rentre dans la boucle que si files != 0.
-        for(int i = 0; i < argc-optind; i++) {
+        for(int i = 0; i < filec; i++) {
                 err = pthread_join(extractors[i], NULL);
                 if(err != 0)
                         exit(EXIT_FAILURE);
@@ -166,7 +168,7 @@ int main(int argc, char *argv[])
         err = pthread_join(saver, NULL);
         if(err != 0)
                 exit(EXIT_FAILURE);
-        debug_printf("Data sever has terminated.\n");
+        debug_printf("Data saver has terminated.\n");
 
 	// Le thread principal lance find_unique
         debug_printf("Starting find_unique().\n");
