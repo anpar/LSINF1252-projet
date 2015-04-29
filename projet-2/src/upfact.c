@@ -13,7 +13,7 @@
 #include "util.h"
 #include "core.h"
 
-#define DEBUG false
+#define DEBUG true
 /* 
  * This macro requires c99.
  */
@@ -110,19 +110,11 @@ int main(int argc, char *argv[])
         unsigned int filec = argc-optind;
         pthread_t extractors[filec];
         for(int i = 0; optind < argc; i++) {
-                // FIX : I heard that we can avoid checking if it's url because libcurl
-                // allows us to read URL exactly like local file.
-                if(is_url(argv[optind])) {
-                        // Lancement d'un thread avec extract_url
-                        debug_printf("Creating a thread to read %s (URL).\n", argv[optind]);
-                }
-                else {
-                        // Lancement d'un thread avec extract_file
-                        debug_printf("Creating a thread to read %s (local file).\n", argv[optind]);
-                        err = pthread_create(&(extractors[i]), NULL, &extract_file,(void *) argv[optind]);
-                        if(err != 0)
-                                exit(EXIT_FAILURE);
-                }
+                // Lancement d'un thread avec extract_file
+                debug_printf("Creating a thread to read %s (local file).\n", argv[optind]);
+                err = pthread_create(&(extractors[i]), NULL, &extract_file,(void *) argv[optind]);
+                if(err != 0)
+                        exit(EXIT_FAILURE);
 
                 optind++;
         }

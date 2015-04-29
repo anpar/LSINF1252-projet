@@ -33,16 +33,6 @@ struct node {
 };
 
 /*
- * @input : a string containing an URL.
- *
- * This function extracts numbers contained
- * at URL, converts them from BigEndian
- * format to usual format and then places them
- * one by one into the first buffer.
- */
-extern void * extract_url(void *);
-
-/*
  * @input : a string containing a local filename.
  * 
  * This function extracts numbers contained

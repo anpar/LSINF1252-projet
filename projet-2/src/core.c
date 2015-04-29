@@ -11,14 +11,16 @@
 #include <inttypes.h>
 /*
  * Fix, how to install and include this?
+ * FIXED : apt-get install libcurl4-gnutls-dev
  */
-//#include <curl/curl.h>
+#include <curl/curl.h>
+#include "fopen.h"
 
 #include "core.h"
 #include "stack.h"
 #include "squfof.h"
 
-#define DEBUG false
+#define DEBUG true
 /* 
  * This macro requires c99.
  */
@@ -49,22 +51,19 @@ bool is_empty_buffer2 = false;
 extern pthread_mutex_t rd;
 
 void * extract_file(void * filename) {
-        //debug_printf("In extract_file.\n");
-	FILE *f;
+	URL_FILE *f;
 	int err;
         char *file = (char *) filename;
-	f = fopen(file, "rb");
+	f = url_fopen(file, "rb");
         if(f == NULL) {
 		fprintf(stderr, "Error while opening %s.\n", file);
-		exit(EXIT_FAILURE);	
+                exit(EXIT_FAILURE);	
 	}
 	
         // Initialize new to 0 and NULL by default
 	struct number new = {0, NULL};
 	uint64_t n;
-	while(fread(&n, sizeof(uint64_t), 1, f) != 0) {
-	//while(!feof(f)) {
-               // fread(&n, sizeof(uint64_t), 1, f);
+	while(url_fread(&n, sizeof(uint64_t), 1, f) != 0) {
 		debug_printf("In the loop of extract_file.\n");
 		debug_printf("1:%" PRIu64 "\n", n);
 		n = be64toh(n);
@@ -77,10 +76,9 @@ void * extract_file(void * filename) {
                 //printf("Buffer 1 (extract_file) : "); display(buffer1);
 		pthread_mutex_unlock(&mutex1);
 		sem_post(&full1); // Il y a un slot rempli en plus
-		//fscanf(f, "%u", &n);
         }
 
-	err = fclose(f);
+	err = url_fclose(f);
 	if(err != 0) {
 		fprintf(stderr, "Error while closing %s.\n", file);
 	}
