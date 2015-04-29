@@ -118,7 +118,7 @@ void * factorize(void * n)
                         //pthread_mutex_unlock(&mutex1);
                         //sem_post(&empty1);
                         
-                        if(!is_empty_buffer1
+                        if(!is_empty_buffer1)
                                 prime_factorizer(item->n, item->origin);
                         // FIX : I move the two following lines above because prime_factorize
                         // doesn't need to between those mutes/sem. Note : seems legit to me
