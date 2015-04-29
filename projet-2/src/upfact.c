@@ -24,11 +24,12 @@ sem_t empty1;
 sem_t full1;
 sem_t empty2;
 sem_t full2;
+struct node * list;
 
 bool file_read = false;
 bool fact_done = false;
 
-int main(int argc, const char *argv[])
+int main(int argc, char *argv[])
 {
         struct timeval tvStart, tvEnd;
         int err;
@@ -52,7 +53,7 @@ int main(int argc, const char *argv[])
 	int option_index = 0;
         int maxthreads = 24;
         int option = 0;
-        bool reading_from_stdin = false;
+        bool read_from_stdin = false;
 
         while((option = getopt_long_only(argc, argv, "", long_options, &option_index)) != -1) {
                 switch(option) {
@@ -75,7 +76,7 @@ int main(int argc, const char *argv[])
 					if(err != 0)
 						exit(EXIT_FAILURE);
 
-                                        reading_from_stdin = true;
+                                        read_from_stdin = true;
                                 }
                                 break;
                         default:
@@ -100,13 +101,17 @@ int main(int argc, const char *argv[])
 	if(err != 0)
 		exit(EXIT_FAILURE);
 
-        if (optind >= argc && !reading_from_stdin) {
+        if (optind >= argc && !read_from_stdin) {
                 usage(ENOFILE);
                 return(EXIT_FAILURE);
         }
-
-        pthread_t extractors[argc-optind];
+        
+        // Number of files
+        unsigned int filec = argc-optind;
+        pthread_t extractors[filec];
         for(int i = 0; optind < argc; i++) {
+                // FIX : I heard that we can avoid checking if it's url because libcurl
+                // allows us to read URL exactly like local file.
                 if(is_url(argv[optind])) {
                         // Lancement d'un thread avec extract_url
                         debug_printf("Creating a thread to read %s (URL).\n", argv[optind]);
@@ -132,9 +137,17 @@ int main(int argc, const char *argv[])
 		debug_printf("Creating calculators...\n");
 	}
 	
+	// Lancement de l'unique thread de sauvegarde (déplacement
+	// du second buffer vers la liste chaînée)
+        pthread_t saver;
+        debug_printf("Starting data saver.\n");
+	err = pthread_create(&saver, NULL, &save_data, NULL); 
+        if(err != 0)
+                exit(EXIT_FAILURE);
+
         // Récupération et libération des threads extractors
         // Remarque: on ne rentre dans la boucle que si files != 0.
-        for(int i = 0; i < argc-optind; i++) {
+        for(int i = 0; i < filec; i++) {
                 err = pthread_join(extractors[i], NULL);
                 if(err != 0)
                         exit(EXIT_FAILURE);
@@ -155,19 +168,31 @@ int main(int argc, const char *argv[])
                 debug_printf("Calculator has terminated.\n");
         }
 	debug_printf("Computation finished.\n");
+        fact_done = true;
 
-	// Lancement de l'unique thread de sauvegarde (déplacement
-	// du second buffer vers la liste chaînée)
-	
+        err = pthread_join(saver, NULL);
+        if(err != 0)
+                exit(EXIT_FAILURE);
+        debug_printf("Data saver has terminated.\n");
+
 	// Le thread principal lance find_unique
+        debug_printf("Starting find_unique().\n");
+        struct number result; 
+        err = find_unique(&result);
+        if(err == EXIT_FAILURE) {
+                free(list);
+                debug_printf("No unique prime factor.\n");
+                return(EXIT_FAILURE);
+        }
+        debug_printf("find_unique() done.\n");
 
         err = gettimeofday(&tvEnd, NULL);
         if(err != 0)
                 return(EXIT_FAILURE);
 
         // Output
-	printf("result\n");
-        printf("filename\n");
+	printf("%d\n", result.n);
+        printf("%s\n", result.origin);
         printf("%ldus\n", timeval_diff(&tvEnd, &tvStart));
 
         // Destroy all semaphores (wrap this in a function?)
@@ -186,4 +211,6 @@ int main(int argc, const char *argv[])
         err = sem_destroy(&full2);
         if(err !=0)
                 return(EXIT_FAILURE);
+
+        return(EXIT_SUCCESS);
 }
