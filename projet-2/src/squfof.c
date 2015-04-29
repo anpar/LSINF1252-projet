@@ -24,7 +24,9 @@ double gcd(unsigned int a, unsigned int b)
 bool isPerfectSquare(unsigned int n) 
 {
         int temp = sqrt(n);
-        return(temp*temp == n);
+	// Try to fix the arithmetic exception caused by division by zero
+	// in squfof
+        return((temp*temp == n) && n != 0);
 }
 
 bool isPrime(unsigned int n) 
