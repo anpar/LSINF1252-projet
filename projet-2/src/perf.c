@@ -1,9 +1,9 @@
 #include <sys/time.h>
 #include "perf.h"
 
-long timeval_diff(struct timeval *t2, struct timeval *t1)
+double timeval_diff(struct timeval *t2, struct timeval *t1)
 {
-        long diff = (t2->tv_usec + 1000000 * t2->tv_sec) - (t1->tv_usec + 1000000 * t1->tv_sec);
+        double diff = (t2->tv_sec + t2->tv_usec/1000000) - (t1->tv_sec + t1->tv_usec/1000000);
         return (diff);
 }
 

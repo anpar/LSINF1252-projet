@@ -193,7 +193,7 @@ int main(int argc, char *argv[])
         // Output
 	printf("%d\n", result.n);
         printf("%s\n", result.origin);
-        printf("%ldus\n", timeval_diff(&tvEnd, &tvStart));
+        printf("%lfs\n", timeval_diff(&tvEnd, &tvStart));
 
         // Destroy all semaphores (wrap this in a function?)
         err = sem_destroy(&empty1);

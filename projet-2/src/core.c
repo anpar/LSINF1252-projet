@@ -9,6 +9,10 @@
 #include <errno.h>
 #include <stdint.h>
 #include <inttypes.h>
+/*
+ * Fix, how to install and include this?
+ */
+//#include <curl/curl.h>
 
 #include "core.h"
 #include "stack.h"
