@@ -1,3 +1,5 @@
+#define _BSD_SOURCE             /* See feature_test_macros(7) */
+#include <endian.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
@@ -5,12 +7,14 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <errno.h>
+#include <stdint.h>
+#include <inttypes.h>
 
 #include "core.h"
 #include "stack.h"
 #include "squfof.h"
 
-#define DEBUG true
+#define DEBUG false
 /* 
  * This macro requires c99.
  */
@@ -53,20 +57,22 @@ void * extract_file(void * filename) {
 	
         // Initialize new to 0 and NULL by default
 	struct number new = {0, NULL};
-	unsigned int n;
-        // Passage à remplacer pour utiliser les fichiers en BigEndian
-	fscanf(f, "%u", &n);
-	while(!feof(f))	{
-                debug_printf("In the loop of extract_file.\n");
+	uint64_t n;
+	while(!feof(f)) {
+                fread(&n, 8, 1, f);
+		debug_printf("In the loop of extract_file.\n");
+		printf("1:%" PRIx64 "\n", n);
+		n = be64toh(n);
+		printf("2:%" PRIu64 "\n", n);
 		(&new)->n = n;
 		(&new)->origin = file;
-		sem_wait(&empty1); // Attendre d'un slot libre
+		sem_wait(&empty1); // Attente d'un slot libre
 	        pthread_mutex_lock(&mutex1);
 		push(&buffer1, new);
-                printf("Buffer 1 (extract_file) : "); display(buffer1);
+                //printf("Buffer 1 (extract_file) : "); display(buffer1);
 		pthread_mutex_unlock(&mutex1);
 		sem_post(&full1); // Il y a un slot rempli en plus
-		fscanf(f, "%u", &n);
+		//fscanf(f, "%u", &n);
         }
 
 	err = fclose(f);
@@ -89,7 +95,7 @@ void prime_factorizer(unsigned int n, char * origin)
                 sem_wait(&empty2); // Attendre d'un slot de libre
                 pthread_mutex_lock(&mutex2);
                 push(&buffer2, new);
-                printf("Buffer 2 (prime_factorizer) : "); display(buffer2);
+                //printf("Buffer 2 (prime_factorizer) : "); display(buffer2);
                 pthread_mutex_unlock(&mutex2);
                 sem_post(&full2); // Il y a un slot rempli de plus
         }
@@ -114,7 +120,7 @@ void * factorize(void * n)
                 if(!(err != 0 && errno == EAGAIN)) {
 		        pthread_mutex_lock(&mutex1);
                         is_empty_buffer1 = pop(&buffer1, item);
-                        printf("Buffer 1 (factorize) : "); display(buffer1);
+                        //printf("Buffer 1 (factorize) : "); display(buffer1);
                         //pthread_mutex_unlock(&mutex1);
                         //sem_post(&empty1);
                         
@@ -201,10 +207,10 @@ void * save_data(void * n)
                 if(!(err != 0 && errno == EAGAIN)) {
 		        pthread_mutex_lock(&mutex2);
                         is_empty_buffer2 = pop(&buffer2, item);
-                        printf("Buffer 2 (save_data) :"); display(buffer2);
+                        //printf("Buffer 2 (save_data) :"); display(buffer2);
                         if(!is_empty_buffer2)
                                 insert(item);
-                        printf("List : "); print_list();
+                        //printf("List : "); print_list();
                         pthread_mutex_unlock(&mutex2);
 		        sem_post(&empty2); // Il y a un slot libre en plus              
                 }
