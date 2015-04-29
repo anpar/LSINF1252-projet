@@ -49,7 +49,7 @@ void * extract_file(void * filename) {
 	FILE *f;
 	int err;
         char *file = (char *) filename;
-	f = fopen(file, "r");
+	f = fopen(file, "rb");
         if(f == NULL) {
 		fprintf(stderr, "Error while opening %s.\n", file);
 		exit(EXIT_FAILURE);	
@@ -58,12 +58,13 @@ void * extract_file(void * filename) {
         // Initialize new to 0 and NULL by default
 	struct number new = {0, NULL};
 	uint64_t n;
-	while(!feof(f)) {
-                fread(&n, 8, 1, f);
+	while(fread(&n, sizeof(uint64_t), 1, f) != 0) {
+	//while(!feof(f)) {
+               // fread(&n, sizeof(uint64_t), 1, f);
 		debug_printf("In the loop of extract_file.\n");
-		printf("1:%" PRIx64 "\n", n);
+		debug_printf("1:%" PRIu64 "\n", n);
 		n = be64toh(n);
-		printf("2:%" PRIu64 "\n", n);
+		debug_printf("2:%" PRIu64 "\n", n);
 		(&new)->n = n;
 		(&new)->origin = file;
 		sem_wait(&empty1); // Attente d'un slot libre

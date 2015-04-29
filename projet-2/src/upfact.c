@@ -13,7 +13,7 @@
 #include "util.h"
 #include "core.h"
 
-#define DEBUG true
+#define DEBUG false
 /* 
  * This macro requires c99.
  */
