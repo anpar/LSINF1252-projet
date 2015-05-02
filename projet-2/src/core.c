@@ -50,24 +50,36 @@ bool is_empty_buffer2 = false;
 
 extern pthread_mutex_t rd;
 
-void * extract_file(void * filename) {
-	URL_FILE *f;
+void * extract_file(void * filename) 
+{
+	URL_FILE *handle;
 	int err;
+        CURL *curl = curl_easy_init();
+        if(curl == NULL) {
+                fprintf(stderr, "Error while initializing libcurl.\n");
+                exit(EXIT_FAILURE);
+        }
+
+        CURLcode curlcode = curl_easy_setopt(curl, CURLOPT_NOSIGNAL, true);
+
         char *file = (char *) filename;
-	f = url_fopen(file, "rb");
-        if(f == NULL) {
+        
+        debug_printf("Trying to open %s...", file);
+        handle = url_fopen(file, "r");
+        if(!handle) {
 		fprintf(stderr, "Error while opening %s.\n", file);
                 exit(EXIT_FAILURE);	
 	}
+        debug_printf("success!\n");
 	
         // Initialize new to 0 and NULL by default
 	struct number new = {0, NULL};
 	uint64_t n;
-	while(url_fread(&n, sizeof(uint64_t), 1, f) != 0) {
-		debug_printf("In the loop of extract_file.\n");
-		debug_printf("1:%" PRIu64 "\n", n);
+	while(url_fread(&n, sizeof(uint64_t), 1, handle) != 0) {
+		debug_printf("Reading %s.\n", file);
+		//debug_printf("1:%" PRIu64 "\n", n);
 		n = be64toh(n);
-		debug_printf("2:%" PRIu64 "\n", n);
+		//debug_printf("2:%" PRIu64 "\n", n);
 		(&new)->n = n;
 		(&new)->origin = file;
 		sem_wait(&empty1); // Attente d'un slot libre
@@ -77,12 +89,15 @@ void * extract_file(void * filename) {
 		pthread_mutex_unlock(&mutex1);
 		sem_post(&full1); // Il y a un slot rempli en plus
         }
-
-	err = url_fclose(f);
+        
+        debug_printf("Trying to close %s...", file);
+	err = url_fclose(handle);
 	if(err != 0) {
 		fprintf(stderr, "Error while closing %s.\n", file);
 	}
-       
+        debug_printf("Success!\n");
+        
+        curl_easy_cleanup(curl);
         debug_printf("Leaving extract_file.\n");
         pthread_exit(NULL);
 }
@@ -95,7 +110,7 @@ void prime_factorizer(unsigned int n, char * origin)
         if(r == n) {
                 (&new)->n = r;
                 (&new)->origin = origin;
-                sem_wait(&empty2); // Attendre d'un slot de libre
+                sem_wait(&empty2); // Attente d'un slot de libre
                 pthread_mutex_lock(&mutex2);
                 push(&buffer2, new);
                 //printf("Buffer 2 (prime_factorizer) : "); display(buffer2);
@@ -244,6 +259,9 @@ void free_list()
 
 int find_unique(struct number * unique)
 {
+        if(list == NULL)
+                return(EXIT_FAILURE);
+
 	//Create a node in order to check the list node by node
 	struct node *runner;
 	runner = list;

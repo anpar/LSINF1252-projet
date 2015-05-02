@@ -8,6 +8,9 @@
 #include <unistd.h>
 #include <getopt.h>
 
+#include <curl/curl.h>
+#include "fopen.h"
+
 #include "io.h"
 #include "perf.h"
 #include "util.h"
@@ -105,13 +108,22 @@ int main(int argc, char *argv[])
                 usage(ENOFILE);
                 return(EXIT_FAILURE);
         }
-        
+
+        CURLcode curl = curl_global_init(CURL_GLOBAL_ALL);
+        if(curl != 0) {
+                fprintf(stderr, "Error while initializing libcurl.\n");
+                exit(EXIT_FAILURE);
+        }
+
         // Number of files
         unsigned int filec = argc-optind;
+        debug_printf("argc : %d.\n", argc);
+        debug_printf("optind : %d.\n", optind);
+        debug_printf("filec : %u.\n", filec);
         pthread_t extractors[filec];
         for(int i = 0; optind < argc; i++) {
                 // Lancement d'un thread avec extract_file
-                debug_printf("Creating a thread to read %s (local file).\n", argv[optind]);
+                debug_printf("Creating extractor %d to read %s.\n", i, argv[optind]);
                 err = pthread_create(&(extractors[i]), NULL, &extract_file,(void *) argv[optind]);
                 if(err != 0)
                         exit(EXIT_FAILURE);
@@ -119,6 +131,8 @@ int main(int argc, char *argv[])
                 optind++;
         }
 
+        curl_global_cleanup();
+                
 	// Lancement des threads de calculs
 	pthread_t calculators[maxthreads];
 	for(int i = 0; i < maxthreads; i++) {
@@ -140,6 +154,7 @@ int main(int argc, char *argv[])
         // Récupération et libération des threads extractors
         // Remarque: on ne rentre dans la boucle que si files != 0.
         for(int i = 0; i < filec; i++) {
+                debug_printf("Trying to join extractor %d.\n", i);
                 err = pthread_join(extractors[i], NULL);
                 if(err != 0)
                         exit(EXIT_FAILURE);
