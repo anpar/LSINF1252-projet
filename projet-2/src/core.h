@@ -1,6 +1,8 @@
 #ifndef _CORE_H
 #define _CORE_H
 
+pthread_mutex_t active_readers_mutex;
+
 /* 
  * n is a number and origin is the name
  * of the file where this factor was found.

@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include "core.h"
+#include "core.h"       // Pour les variables globales buffer1 et buffer2
 #include "stack.h"
 
 #define DEBUG false
@@ -13,13 +13,9 @@
 
 void push(struct node ** stack, struct number new)
 {
-        debug_printf("In push\n");
         struct node * n = (struct node *) malloc(sizeof(struct node));
-        debug_printf("In push, after malloc\n");
-        if(n == NULL) {
-                debug_printf("Malloc failed in push.\n");
+        if(n == NULL)
                 exit(EXIT_FAILURE);
-        }
 
         n->content = new;
         n->next = *stack;
@@ -28,8 +24,6 @@ void push(struct node ** stack, struct number new)
 
 bool pop(struct node ** stack, struct number * popped)
 {
-        debug_printf("In pop\n");
-
 	if(*stack == NULL)
         	return(true);
 	
@@ -52,8 +46,6 @@ void display(struct node * stack)
         }
         
         printf("\n");
-
-	debug_printf("Display: success!\n");
 }
 
 bool is_empty(struct node * stack)

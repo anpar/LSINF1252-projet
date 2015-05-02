@@ -23,14 +23,18 @@
 #define debug_printf(fmt, ...) \
                             do { if (DEBUG) printf(fmt,## __VA_ARGS__); } while (0)
 
+// Semaphores for the two buffers
 sem_t empty1;
 sem_t full1;
 sem_t empty2;
 sem_t full2;
+// Linked list of prime factors
 struct node * list;
 
 bool file_read = false;
 bool fact_done = false;
+
+volatile int active_readers = 0;
 
 int main(int argc, char *argv[])
 {
@@ -54,7 +58,7 @@ int main(int argc, char *argv[])
 	};
 
 	int option_index = 0;
-        int maxthreads = 24;
+        int maxthreads = 4;
         int option = 0;
         bool read_from_stdin = false;
 
@@ -67,13 +71,9 @@ int main(int argc, char *argv[])
                                                 return(EXIT_FAILURE);
                                         }
                                         
-                                        debug_printf("Setting maxthreads option to %s.\n", optarg);
                                         maxthreads = atoi(optarg);
                                 } 
                                 else if(*(long_options[option_index].flag) == 2) {
-                                        debug_printf("Reading flow from stdin.\n");
-                                        // Lancement d'un thread avec extract_file
-                                        debug_printf("Creating a thread to read from sdtin.\n");
 					pthread_t stdin_reader;                                        
 					err = pthread_create(&stdin_reader, NULL, &extract_file,(void *) "/dev/stdin");
 					if(err != 0)
@@ -103,23 +103,22 @@ int main(int argc, char *argv[])
 	err = sem_init(&full2, 0, 0);
 	if(err != 0)
 		exit(EXIT_FAILURE);
-
+        
+        // Si aucun fichier n'est donné en argument et qu'on ne lit pas non plus depuis stdin
         if (optind >= argc && !read_from_stdin) {
                 usage(ENOFILE);
                 return(EXIT_FAILURE);
         }
-
+        
+        /*
         CURLcode curl = curl_global_init(CURL_GLOBAL_ALL);
         if(curl != 0) {
                 fprintf(stderr, "Error while initializing libcurl.\n");
                 exit(EXIT_FAILURE);
-        }
+        }*/
 
-        // Number of files
+        // filec contient le nombre de fichiers à lire (hors stdin)
         unsigned int filec = argc-optind;
-        debug_printf("argc : %d.\n", argc);
-        debug_printf("optind : %d.\n", optind);
-        debug_printf("filec : %u.\n", filec);
         pthread_t extractors[filec];
         for(int i = 0; optind < argc; i++) {
                 // Lancement d'un thread avec extract_file
@@ -131,7 +130,7 @@ int main(int argc, char *argv[])
                 optind++;
         }
 
-        curl_global_cleanup();
+        //curl_global_cleanup();
                 
 	// Lancement des threads de calculs
 	pthread_t calculators[maxthreads];
@@ -150,6 +149,13 @@ int main(int argc, char *argv[])
 	err = pthread_create(&saver, NULL, &save_data, NULL); 
         if(err != 0)
                 exit(EXIT_FAILURE);
+
+        int last_active_readers;
+        do {
+                pthread_mutex_lock(&active_readers_mutex);
+                last_active_readers = active_readers;
+                pthread_mutex_unlock(&active_readers_mutex);
+        } while(last_active_readers != 0);
 
         // Récupération et libération des threads extractors
         // Remarque: on ne rentre dans la boucle que si files != 0.

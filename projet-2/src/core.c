@@ -45,6 +45,9 @@ extern sem_t full2;
 // Variables contenant les conditions d'arrêt des threads
 extern bool file_read;
 extern bool fact_done;
+
+extern volatile int active_readers;
+
 bool is_empty_buffer1 = false;
 bool is_empty_buffer2 = false;
 
@@ -52,6 +55,9 @@ extern pthread_mutex_t rd;
 
 void * extract_file(void * filename) 
 {
+        pthread_mutex_lock(&active_readers_mutex);
+        active_readers++;
+        pthread_mutex_unlock(&active_readers_mutex);
 	URL_FILE *handle;
 	int err;
         CURL *curl = curl_easy_init();
@@ -99,6 +105,10 @@ void * extract_file(void * filename)
         
         curl_easy_cleanup(curl);
         debug_printf("Leaving extract_file.\n");
+
+        pthread_mutex_lock(&active_readers_mutex);
+        active_readers--;
+        pthread_mutex_unlock(&active_readers_mutex);
         pthread_exit(NULL);
 }
 
