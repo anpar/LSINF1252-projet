@@ -1,7 +1,10 @@
 #ifndef _CORE_H
 #define _CORE_H
+#include <pthread.h>
+
 
 pthread_mutex_t active_readers_mutex;
+pthread_mutex_t active_factorizers_mutex;
 
 /* 
  * n is a number and origin is the name

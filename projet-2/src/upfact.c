@@ -35,6 +35,7 @@ bool file_read = false;
 bool fact_done = false;
 
 volatile int active_readers = 0;
+volatile int active_factorizers = 0;
 
 int main(int argc, char *argv[])
 {
@@ -110,12 +111,11 @@ int main(int argc, char *argv[])
                 return(EXIT_FAILURE);
         }
         
-        /*
         CURLcode curl = curl_global_init(CURL_GLOBAL_ALL);
         if(curl != 0) {
                 fprintf(stderr, "Error while initializing libcurl.\n");
                 exit(EXIT_FAILURE);
-        }*/
+        }
 
         // filec contient le nombre de fichiers à lire (hors stdin)
         unsigned int filec = argc-optind;
@@ -152,6 +152,7 @@ int main(int argc, char *argv[])
 
         int last_active_readers;
         do {
+                //debug_printf("Waiting for readers.\n");
                 pthread_mutex_lock(&active_readers_mutex);
                 last_active_readers = active_readers;
                 pthread_mutex_unlock(&active_readers_mutex);
@@ -172,6 +173,13 @@ int main(int argc, char *argv[])
 	debug_printf("Extraction finished.\n");
         file_read = true;
 	
+        int last_active_factorizers;
+        do {
+                pthread_mutex_lock(&active_factorizers_mutex);
+                last_active_factorizers = active_factorizers;
+                pthread_mutex_unlock(&active_factorizers_mutex);
+        } while(last_active_factorizers != 0);
+
 	for(int i = 0; i < maxthreads; i++) {
                 err = pthread_join(calculators[i], NULL);
                 pthread_join(calculators[i], NULL);

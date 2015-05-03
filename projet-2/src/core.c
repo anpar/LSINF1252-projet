@@ -2,7 +2,6 @@
 #include <endian.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <pthread.h>
 #include <semaphore.h>
 #include <stdbool.h>
 #include <unistd.h>
@@ -47,6 +46,7 @@ extern bool file_read;
 extern bool fact_done;
 
 extern volatile int active_readers;
+extern volatile int active_factorizers;
 
 bool is_empty_buffer1 = false;
 bool is_empty_buffer2 = false;
@@ -60,40 +60,40 @@ void * extract_file(void * filename)
         pthread_mutex_unlock(&active_readers_mutex);
 	URL_FILE *handle;
 	int err;
-        CURL *curl = curl_easy_init();
+        /*CURL *curl = curl_easy_init();
         if(curl == NULL) {
                 fprintf(stderr, "Error while initializing libcurl.\n");
                 exit(EXIT_FAILURE);
-        }
+        }*/
 
-        CURLcode curlcode = curl_easy_setopt(curl, CURLOPT_NOSIGNAL, true);
+        //CURLcode curlcode = curl_easy_setopt(curl, CURLOPT_NOSIGNAL, true);
 
         char *file = (char *) filename;
         
         debug_printf("Trying to open %s...", file);
-        handle = url_fopen(file, "r");
-        if(!handle) {
+        handle = url_fopen(file, "rb");
+        // Ne détecte pas si le fichier n'existe pas...
+        if(handle == NULL) {
 		fprintf(stderr, "Error while opening %s.\n", file);
                 exit(EXIT_FAILURE);	
 	}
-        debug_printf("success!\n");
+        debug_printf(" success!\n");
 	
         // Initialize new to 0 and NULL by default
 	struct number new = {0, NULL};
 	uint64_t n;
+        bool empty = true;
 	while(url_fread(&n, sizeof(uint64_t), 1, handle) != 0) {
-		debug_printf("Reading %s.\n", file);
-		//debug_printf("1:%" PRIu64 "\n", n);
+		empty = false;
+                debug_printf("Reading %s.\n", file);
 		n = be64toh(n);
-		//debug_printf("2:%" PRIu64 "\n", n);
 		(&new)->n = n;
 		(&new)->origin = file;
-		sem_wait(&empty1); // Attente d'un slot libre
+		sem_wait(&empty1);
 	        pthread_mutex_lock(&mutex1);
 		push(&buffer1, new);
-                //printf("Buffer 1 (extract_file) : "); display(buffer1);
 		pthread_mutex_unlock(&mutex1);
-		sem_post(&full1); // Il y a un slot rempli en plus
+		sem_post(&full1);
         }
         
         debug_printf("Trying to close %s...", file);
@@ -101,14 +101,22 @@ void * extract_file(void * filename)
 	if(err != 0) {
 		fprintf(stderr, "Error while closing %s.\n", file);
 	}
-        debug_printf("Success!\n");
+        debug_printf(" success!\n");
         
-        curl_easy_cleanup(curl);
+        //curl_easy_cleanup(curl);
         debug_printf("Leaving extract_file.\n");
 
         pthread_mutex_lock(&active_readers_mutex);
         active_readers--;
         pthread_mutex_unlock(&active_readers_mutex);
+
+        // Rustine pour détecter les fichiers vides/non-existants
+        // Ne fonnctionne pas pour les URL, comportements indéfinis.
+        if(empty) {
+                fprintf(stderr, "%s is either empty or non-existing.\n", file);
+                exit(EXIT_FAILURE);
+        }
+
         pthread_exit(NULL);
 }
 
@@ -135,6 +143,9 @@ void prime_factorizer(unsigned int n, char * origin)
 
 void * factorize(void * n)
 {
+        pthread_mutex_lock(&active_factorizers_mutex);
+        active_factorizers++;
+        pthread_mutex_unlock(&active_factorizers_mutex);
         //debug_printf("In factorize.\n");
         int err;
 	struct number *item = (struct number *) malloc(sizeof(struct number));
@@ -168,6 +179,9 @@ void * factorize(void * n)
                 }
         }
 
+        pthread_mutex_lock(&active_factorizers_mutex);
+        active_factorizers--;
+        pthread_mutex_unlock(&active_factorizers_mutex);
         free(item);
 	pthread_exit(NULL);
 }
