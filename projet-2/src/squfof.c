@@ -57,15 +57,6 @@ int SQUFOF(unsigned int N)
         if(N == 1) {
                 return(EXIT_FAILURE);
         }
-
-        // FIX : Il y a une faille ici ! En effet si on donne 9 en entré à SQUFOF,
-        // il va ici dire N = 3, et caluler le facteur premier de 3 (3). Or avec
-        // 9 on aurait du avoir 3 et puis encore 3 (et donc deux fois 3, 3 n'est plus
-        // unique ! Il faudrait faire cette vérification dans prime_factorizer selon moi!
-        if(isPerfectSquare(N)) {
-                verbose_printf("Input is a square number!\n");
-                N = sqrt(N);
-        }
         
         if(isPrime(N)) {
                 verbose_printf("Input is prime!\n");

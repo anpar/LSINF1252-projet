@@ -9,10 +9,8 @@
 #include <stdint.h>
 #include <inttypes.h>
 #include <errno.h>
-/*
- * Fix, how to install and include this?
- * FIXED : apt-get install libcurl4-gnutls-dev
- */
+#include <math.h>
+
 #include <curl/curl.h>    
 #include "fopen.h"
 
@@ -123,22 +121,24 @@ void * extract_file(void * filename)
 
 void prime_factorizer(unsigned int n, char * origin)
 {
-        //debug_printf("In prime_factorizer.\n");
-        unsigned int r = SQUFOF(n);
-        struct number new = {0, NULL};
-        if(r == n) {
-                (&new)->n = r;
-                (&new)->origin = origin;
-                sem_wait(&empty2); // Attente d'un slot de libre
-                pthread_mutex_lock(&mutex2);
-                push(&buffer2, new);
-                //printf("Buffer 2 (prime_factorizer) : "); display(buffer2);
-                pthread_mutex_unlock(&mutex2);
-                sem_post(&full2); // Il y a un slot rempli de plus
-        }
-        else {
-                prime_factorizer(r, origin);
-                prime_factorizer(n/r, origin);
+        if(isPerfectSquare(n)) {
+                prime_factorizer(sqrt(n), origin);
+                prime_factorizer(sqrt(n), origin);
+        } else {
+                unsigned int r = SQUFOF(n);
+                struct number new = {0, NULL};
+                if(r == n) {
+                        (&new)->n = r;
+                        (&new)->origin = origin;
+                        sem_wait(&empty2); 
+                        pthread_mutex_lock(&mutex2);
+                        push(&buffer2, new);
+                        pthread_mutex_unlock(&mutex2);
+                        sem_post(&full2);
+                } else {
+                        prime_factorizer(r, origin);
+                        prime_factorizer(n/r, origin);
+                }
         }
 }
 
