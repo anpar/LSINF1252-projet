@@ -78,15 +78,6 @@ typedef struct fcurl_data URL_FILE;
 /* we use a global one for convenience */
 //__thread CURLM *multi_handle;
 
-/* curl calls this routine to get more data */
-static size_t write_callback(char *buffer, size_t size,size_t nitems,void *userp);
-
-/* use to attempt to fill the read buffer up to requested number of bytes */
-static int fill_buffer(URL_FILE *file, size_t want);
-
-/* use to remove want bytes from the front of a files buffer */
-static int use_buffer(URL_FILE *file,int want);
-
 URL_FILE *url_fopen(const char *url,const char *operation);
 
 int url_fclose(URL_FILE *file);

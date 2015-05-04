@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
                 return(EXIT_FAILURE);
         }
         
-        CURLcode curl = curl_global_init(CURL_GLOBAL_ALL);
+        CURLcode curl = curl_global_init(CURL_GLOBAL_DEFAULT);
         if(curl != 0) {
                 fprintf(stderr, "Error while initializing libcurl.\n");
                 exit(EXIT_FAILURE);
