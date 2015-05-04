@@ -51,7 +51,7 @@
 #endif
 #include <stdlib.h>
 #include <errno.h>
-#include <curl/curl.h>
+#include <curl/curl.h>     
 
 enum fcurl_type_e {
   CFTYPE_NONE=0,
@@ -76,7 +76,7 @@ struct fcurl_data
 typedef struct fcurl_data URL_FILE;
 
 /* we use a global one for convenience */
-CURLM *multi_handle;
+//__thread CURLM *multi_handle;
 
 /* curl calls this routine to get more data */
 static size_t write_callback(char *buffer, size_t size,size_t nitems,void *userp);

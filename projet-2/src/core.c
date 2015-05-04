@@ -8,11 +8,12 @@
 #include <errno.h>
 #include <stdint.h>
 #include <inttypes.h>
+#include <errno.h>
 /*
  * Fix, how to install and include this?
  * FIXED : apt-get install libcurl4-gnutls-dev
  */
-#include <curl/curl.h>
+#include <curl/curl.h>    
 #include "fopen.h"
 
 #include "core.h"
@@ -60,13 +61,13 @@ void * extract_file(void * filename)
         pthread_mutex_unlock(&active_readers_mutex);
 	URL_FILE *handle;
 	int err;
-        /*CURL *curl = curl_easy_init();
+        CURL *curl = curl_easy_init();
         if(curl == NULL) {
                 fprintf(stderr, "Error while initializing libcurl.\n");
                 exit(EXIT_FAILURE);
-        }*/
+        }
 
-        //CURLcode curlcode = curl_easy_setopt(curl, CURLOPT_NOSIGNAL, true);
+        CURLcode curlcode = curl_easy_setopt(curl, CURLOPT_NOSIGNAL, true);
 
         char *file = (char *) filename;
         
@@ -103,7 +104,7 @@ void * extract_file(void * filename)
 	}
         debug_printf(" success!\n");
         
-        //curl_easy_cleanup(curl);
+        curl_easy_cleanup(curl);
         debug_printf("Leaving extract_file.\n");
 
         pthread_mutex_lock(&active_readers_mutex);

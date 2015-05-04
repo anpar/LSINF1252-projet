@@ -3,7 +3,7 @@ CFLAGS = -std=c99 -Wall -g
 all: upfact
 
 upfact: upfact.o io.o perf.o util.o core.o stack.o squfof.o fopen.o
-	gcc $(CFLAGS) -o upfact upfact.o io.o perf.o util.o core.o stack.o squfof.o fopen.o -lm -lpthread -lcurl
+	gcc $(CFLAGS) -o upfact upfact.o io.o perf.o util.o core.o stack.o squfof.o fopen.o -lm -lpthread -lcurl 
 
 upfact.o: upfact.c io.h perf.h util.h core.h stack.h squfof.o
 	gcc $(CFLAGS) -c upfact.c
@@ -27,7 +27,7 @@ squfof.o: squfof.c squfof.h
 	gcc $(CFLAGS) -c squfof.c
 
 fopen.o: fopen.c fopen.h
-	gcc $(CFLAGS) -c fopen.c
+	gcc $(CFLAGS) -c fopen.c 
 
 clean:
 	rm -rf *.o

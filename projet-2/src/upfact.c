@@ -7,8 +7,9 @@
 #include <semaphore.h>
 #include <unistd.h>
 #include <getopt.h>
+#include <errno.h>
 
-#include <curl/curl.h>
+#include <curl/curl.h>    
 #include "fopen.h"
 
 #include "io.h"
@@ -130,7 +131,7 @@ int main(int argc, char *argv[])
                 optind++;
         }
 
-        //curl_global_cleanup();
+        curl_global_cleanup();
                 
 	// Lancement des threads de calculs
 	pthread_t calculators[maxthreads];
