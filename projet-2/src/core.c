@@ -84,8 +84,9 @@ void * extract_file(void * filename)
         bool empty = true;
 	while(url_fread(&n, sizeof(uint64_t), 1, handle) != 0) {
 		empty = false;
-                debug_printf("Reading %s.\n", file);
+                debug_printf("Reading %s : ", file);
 		n = be64toh(n);
+                debug_printf("%" PRIu64 "\n", n);
 		(&new)->n = n;
 		(&new)->origin = file;
 		sem_wait(&empty1);

@@ -76,8 +76,8 @@ int SQUFOF(unsigned int N)
 		Qnext = k*N - P*P;
 		
 		verbose_printf("\t\t P(0)=%d \t Q(0)=%d \t Q(1)=%d\n", P, Q, Qnext);
-
-		while(!isPerfectSquare(Qnext)) {
+                i = 1;
+		while(!(isPerfectSquare(Qnext) && (i % 2 == 0))) {
 	       		b = floor((floor(sqrt(k*N)) + P)/Qnext);
 			Pprev = P;        	
 			P = b*Qnext - P;
@@ -85,7 +85,8 @@ int SQUFOF(unsigned int N)
 			tmp = Qnext;
 		        Qnext = Q + b*(Pprev - P);
 		        Q = tmp;
-		
+		        
+                        i++;
 			verbose_printf("P(i-1)=%d \t P(i)=%d \t Q(i)=%d \t Q(i+1)=%d\n",Pprev, P, Q, Qnext);              
 		}
 		

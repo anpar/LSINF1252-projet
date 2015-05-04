@@ -130,8 +130,6 @@ int main(int argc, char *argv[])
 
                 optind++;
         }
-
-        curl_global_cleanup();
                 
 	// Lancement des threads de calculs
 	pthread_t calculators[maxthreads];
@@ -234,5 +232,6 @@ int main(int argc, char *argv[])
         if(err !=0)
                 return(EXIT_FAILURE);
 
+        curl_global_cleanup();
         return(EXIT_SUCCESS);
 }
