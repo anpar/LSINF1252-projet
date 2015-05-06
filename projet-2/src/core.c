@@ -133,6 +133,7 @@ void prime_factorizer(uint64_t n, char * origin)
                 push(&buffer2, new);
                 pthread_mutex_unlock(&mutex2);
                 sem_post(&full2);
+		prime_factorizer(n/r, origin);
         } else {
                 prime_factorizer(r, origin);
                 prime_factorizer(n/r, origin);
