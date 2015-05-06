@@ -63,9 +63,17 @@ divisible par un nombre plus grand que sa racine carrée (excepté lui-même) ; 
 d'arrêter les tests à sa racine. Si cette borne est atteinte, le nombre est premier.
 
 \section{Architecture générale}
+La logique que nous avons suivie pour réaliser notre programme est celle représentée sur la figure \ref{fig:arch}. 
+Premièrement, nous créons autant de threads que de fichiers à traiter : ce sont les \emph{extractors}. 
+Leur rôle est d'extraire les nombres un par un des fichiers, de les traduire du \emph{Big Endian}, et de les
+mettre dans un premier buffer (\emph{buffer1}). La taille de ce dernier est fixée au nombre de threads 
+\emph{maxthreads n} : en effet, si le buffer est plus petit, les threads ne seront jamais utilisés de façon
+optimale, si il est plus grand, les threads n'auront pas vraiment de meilleurs performances et le buffer ne
+sera jamais rempli complètement.
+
 \begin{figure}[ht]
 	\centering
-	\includegraphics[scale=0.8]{img/arch.png}
+	\includegraphics[scale=0.3]{img/arch.jpg}
 	\caption{L'architecture de notre programme.}
 	\label{fig:arch}
 \end{figure}
@@ -88,6 +96,14 @@ lent pour de très gros nombres (à titre d'exemple 2200 secondes pour 1 threads
 	\caption{Accélération du programme en fonction du nombre de threads sur un processeur i7 3770k (12 coeurs)
 	avec 8GB de RAM.}
 	\label{fig:speedup}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[scale=0.8]{img/time.png}
+	\caption{Temps d'éxécution en fonction du nombre de threads sur un processeur i7 3770k (12 coeurs)
+	avec 8GB de RAM.}
+	\label{fig:time}
 \end{figure}
 
 \end{document}
