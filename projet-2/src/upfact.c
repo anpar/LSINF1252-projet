@@ -150,13 +150,13 @@ int main(int argc, char *argv[])
         if(err != 0)
                 exit(EXIT_FAILURE);
 
-        int last_active_readers;
-        do {
+        /*int last_active_readers;
+	 do {
                 //debug_printf("Waiting for readers.\n");
                 pthread_mutex_lock(&active_readers_mutex);
                 last_active_readers = active_readers;
                 pthread_mutex_unlock(&active_readers_mutex);
-        } while(last_active_readers != 0);
+		} while(last_active_readers != 0);*/
 
         // Récupération et libération des threads extractors
         // Remarque: on ne rentre dans la boucle que si files != 0.
@@ -173,12 +173,12 @@ int main(int argc, char *argv[])
 	debug_printf("Extraction finished.\n");
         file_read = true;
 	
-        int last_active_factorizers;
+	/* int last_active_factorizers;
         do {
                 pthread_mutex_lock(&active_factorizers_mutex);
                 last_active_factorizers = active_factorizers;
                 pthread_mutex_unlock(&active_factorizers_mutex);
-        } while(last_active_factorizers != 0);
+		} while(last_active_factorizers != 0);*/
 
 	for(int i = 0; i < maxthreads; i++) {
                 err = pthread_join(calculators[i], NULL);
