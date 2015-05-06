@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <getopt.h>
 #include <errno.h>
+#include <inttypes.h>
 
 #include <curl/curl.h>    
 #include "fopen.h"
@@ -17,7 +18,7 @@
 #include "util.h"
 #include "core.h"
 
-#define DEBUG true
+#define DEBUG false
 /* 
  * This macro requires c99.
  */
@@ -211,7 +212,7 @@ int main(int argc, char *argv[])
                 return(EXIT_FAILURE);
 
         // Output
-	printf("%d\n", result.n);
+	printf("%d\n", (unsigned int) result.n);
         printf("%s\n", result.origin);
         printf("%.3lfs\n", timeval_diff(&tvEnd, &tvStart));
 

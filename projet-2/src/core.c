@@ -16,7 +16,7 @@
 
 #include "core.h"
 #include "stack.h"
-#include "squfof.h"
+#include "trial.h"
 
 #define DEBUG true
 /* 
@@ -69,14 +69,14 @@ void * extract_file(void * filename)
 
         char *file = (char *) filename;
         
-        debug_printf("Trying to open %s...", file);
+        //debug_printf("Trying to open %s...", file);
         handle = url_fopen(file, "rb");
         // Ne détecte pas si le fichier n'existe pas...
         if(handle == NULL) {
 		fprintf(stderr, "Error while opening %s.\n", file);
                 exit(EXIT_FAILURE);	
 	}
-        debug_printf(" success!\n");
+        //debug_printf(" success!\n");
 	
         // Initialize new to 0 and NULL by default
 	struct number new = {0, NULL};
@@ -84,9 +84,9 @@ void * extract_file(void * filename)
         bool empty = true;
 	while(url_fread(&n, sizeof(uint64_t), 1, handle) != 0) {
 		empty = false;
-                debug_printf("Reading %s : ", file);
+                //debug_printf("Reading %s : ", file);
 		n = be64toh(n);
-                debug_printf("%" PRIu64 "\n", n);
+                //debug_printf("%" PRIu64 "\n", n);
 		(&new)->n = n;
 		(&new)->origin = file;
 		sem_wait(&empty1);
@@ -96,15 +96,15 @@ void * extract_file(void * filename)
 		sem_post(&full1);
         }
         
-        debug_printf("Trying to close %s...", file);
+        //debug_printf("Trying to close %s...", file);
 	err = url_fclose(handle);
 	if(err != 0) {
 		fprintf(stderr, "Error while closing %s.\n", file);
 	}
-        debug_printf(" success!\n");
+        //debug_printf(" success!\n");
         
         //curl_easy_cleanup(curl);
-        debug_printf("Leaving extract_file.\n");
+        //debug_printf("Leaving extract_file.\n");
 
         pthread_mutex_lock(&active_readers_mutex);
         active_readers--;
@@ -120,26 +120,22 @@ void * extract_file(void * filename)
         pthread_exit(NULL);
 }
 
-void prime_factorizer(unsigned int n, char * origin)
+void prime_factorizer(uint64_t n, char * origin)
 {
-        if(isPerfectSquare(n)) {
-                prime_factorizer(sqrt(n), origin);
-                prime_factorizer(sqrt(n), origin);
+        uint64_t r = trial_division(n);
+        struct number new = {0, NULL};
+        if(r == IS_PRIME) {
+                (&new)->n = n;
+                //debug_printf("Factor : %" PRIu64 "\n", n);
+                (&new)->origin = origin;
+                sem_wait(&empty2); 
+                pthread_mutex_lock(&mutex2);
+                push(&buffer2, new);
+                pthread_mutex_unlock(&mutex2);
+                sem_post(&full2);
         } else {
-                unsigned int r = SQUFOF(n);
-                struct number new = {0, NULL};
-                if(r == n) {
-                        (&new)->n = r;
-                        (&new)->origin = origin;
-                        sem_wait(&empty2); 
-                        pthread_mutex_lock(&mutex2);
-                        push(&buffer2, new);
-                        pthread_mutex_unlock(&mutex2);
-                        sem_post(&full2);
-                } else {
-                        prime_factorizer(r, origin);
-                        prime_factorizer(n/r, origin);
-                }
+                prime_factorizer(r, origin);
+                prime_factorizer(n/r, origin);
         }
 }
 
@@ -162,16 +158,16 @@ void * factorize(void * n)
 		        pthread_mutex_lock(&mutex1);
                         is_empty_buffer1 = pop(&buffer1, item);
                         //printf("Buffer 1 (factorize) : "); display(buffer1);
-                        //pthread_mutex_unlock(&mutex1);
-                        //sem_post(&empty1);
+                        pthread_mutex_unlock(&mutex1);
+                        sem_post(&empty1);
                         
-                        if(!is_empty_buffer1)
-                                prime_factorizer(item->n, item->origin);
+                        //if(!is_empty_buffer1)
+                        prime_factorizer(item->n, item->origin);
                         // FIX : I move the two following lines above because prime_factorize
                         // doesn't need to between those mutes/sem. Note : seems legit to me
                         // but causes annoying bug in some cases... Let's create an issue on GitHu
-                        pthread_mutex_unlock(&mutex1);
-		        sem_post(&empty1); // Il y a un slot libre en plus              
+                        //pthread_mutex_unlock(&mutex1);
+		        //sem_post(&empty1); // Il y a un slot libre en plus              
                 
                 }
 		else {
@@ -230,7 +226,7 @@ void print_list()
 {
         struct node * current = list;
         while(current != NULL) {
-                printf("%d (%s) - ", current->content.n, current->content.origin);
+                printf("%" PRIu64 "(%s) - ", current->content.n, current->content.origin);
                 current = current->next;
         }
         printf("\n");

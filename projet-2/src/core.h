@@ -1,7 +1,7 @@
 #ifndef _CORE_H
 #define _CORE_H
 #include <pthread.h>
-
+#include <inttypes.h>
 
 pthread_mutex_t active_readers_mutex;
 pthread_mutex_t active_factorizers_mutex;
@@ -20,7 +20,7 @@ pthread_mutex_t active_factorizers_mutex;
  * be NULL.
  */
 struct number {
-	unsigned int n;
+	uint64_t n;
 	char *  origin;
 };
 

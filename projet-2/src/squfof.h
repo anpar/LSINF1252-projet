@@ -6,24 +6,24 @@
  * divisor of a and b using euclide's algorithm
  * recursively.
  */
-double gcd(unsigned int, unsigned int);
+uint64_t gcd(uint64_t, uint64_t);
 
 /*
  * Used to test whether a integer is a 
  * perfect square or not.
  */
 
-bool isPerfectSquare(unsigned int); 
+bool isPerfectSquare(uint64_t); 
 
 /*
  * Used to test whether a number is
  * prime or not.
  */
-bool isPrime(unsigned int);
+bool isPrime(uint64_t);
 
 /*
  * Shanks's square forms factorization algorithm.
  */
-int SQUFOF(unsigned int);
+uint64_t SQUFOF(uint64_t);
 
 #endif    

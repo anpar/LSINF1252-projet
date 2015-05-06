@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <stdbool.h>
+#include <inttypes.h>
 #include "squfof.h"
 
 #define VERBOSE false
@@ -12,24 +13,25 @@
 #define verbose_printf(fmt, ...) \
                     do { if (VERBOSE) printf(fmt,## __VA_ARGS__); } while (0)
 
-double gcd(unsigned int a, unsigned int b)
+uint64_t gcd(uint64_t a, uint64_t b)
 {
-        verbose_printf("Computing gcd  of %d and %d.\n", a, b);
+        //verbose_printf("Computing gcd  of %d and %d.\n", a, b);
         if(b == 0)
                 return(a);
         else
                 return(gcd(b, a % b));
 }
 
-bool isPerfectSquare(unsigned int n) 
+bool isPerfectSquare(uint64_t n) 
 {
-        int temp = sqrt(n);
+        n = (long double) n;
+        long double temp = sqrtl(n);
 	// Try to fix the arithmetic exception caused by division by zero
 	// in squfof
         return((temp*temp == n) && n != 0);
 }
 
-bool isPrime(unsigned int n) 
+bool isPrime(uint64_t n) 
 {
         if (n <= 3) {
                 return n > 1;
@@ -48,12 +50,14 @@ bool isPrime(unsigned int n)
         return true;
 }
 
-int SQUFOF(unsigned int N)
+uint64_t SQUFOF(uint64_t N)
 {
+        N = (long double) N;
         /*
          * Note that by definition, the prime factorization
          * of 1 is an empty product (1 = 2^0*3^0*5^0...).
          */
+
         if(N == 1) {
                 return(EXIT_FAILURE);
         }
@@ -67,18 +71,19 @@ int SQUFOF(unsigned int N)
                 return(2);
         }
 
-	int P, Pprev, Q, Qnext, b, tmp, f, i;
+	long double P, Pprev, Q, Qnext, b, tmp, f;
+        int i;
         int lim = 100;
 	for(int k = 1;;k++) {
                 verbose_printf("\nLet's try for k = %d.\n", k);
-                P = floor(sqrt(k*N));
+                P = floorl(sqrtl(k*N));
 		Q = 1;
 		Qnext = k*N - P*P;
 		
-		verbose_printf("\t\t P(0)=%d \t Q(0)=%d \t Q(1)=%d\n", P, Q, Qnext);
+		//verbose_printf("\t\t P(0)=%d \t Q(0)=%d \t Q(1)=%d\n", P, Q, Qnext);
                 i = 1;
 		while(!(isPerfectSquare(Qnext) && (i % 2 == 0))) {
-	       		b = floor((floor(sqrt(k*N)) + P)/Qnext);
+	       		b = floorl((floorl(sqrtl(k*N)) + P)/Qnext);
 			Pprev = P;        	
 			P = b*Qnext - P;
 			
@@ -87,20 +92,20 @@ int SQUFOF(unsigned int N)
 		        Q = tmp;
 		        
                         i++;
-			verbose_printf("P(i-1)=%d \t P(i)=%d \t Q(i)=%d \t Q(i+1)=%d\n",Pprev, P, Q, Qnext);              
+			//verbose_printf("P(i-1)=%d \t P(i)=%d \t Q(i)=%d \t Q(i+1)=%d\n",Pprev, P, Q, Qnext);              
 		}
 		
-		verbose_printf("Here, Q(i+1) is a perfect square\n");
+		//verbose_printf("Here, Q(i+1) is a perfect square\n");
 
-		b = floor((floor(sqrt(k*N)) - P)/sqrt(Qnext));
-		P = b*sqrt(Qnext) + P;
-		Q = sqrt(Qnext);
+		b = floorl((floorl(sqrtl(k*N)) - P)/sqrtl(Qnext));
+		P = b*sqrtl(Qnext) + P;
+		Q = sqrtl(Qnext);
 		Qnext = (k*N - P*P)/Q;
 		
-		verbose_printf("\t\t P(0)=%d \t Q(0)=%d \t Q(1)=%d\n", P, Q, Qnext);
+		//verbose_printf("\t\t P(0)=%d \t Q(0)=%d \t Q(1)=%d\n", P, Q, Qnext);
                 i = 0;
 		while(P != Pprev && i < lim) {      
-		       	b = floor((floor(sqrt(k*N)) + P)/Qnext);
+		       	b = floorl((floorl(sqrtl(k*N)) + P)/Qnext);
 			Pprev = P;        	
 			P = b*Qnext - P;
 
@@ -109,14 +114,14 @@ int SQUFOF(unsigned int N)
 		        Q = tmp;
 		        i++;
 
-			verbose_printf("P(i-1)=%d \t P(i)=%d \t Q(i)=%d \t Q(i+1)=%d\n",Pprev, P, Q, Qnext);    	        
+			//verbose_printf("P(i-1)=%d \t P(i)=%d \t Q(i)=%d \t Q(i+1)=%d\n",Pprev, P, Q, Qnext);    	        
 		}
                 
                 if(i == lim) {
-                        verbose_printf("Failure with k = %d.\n", k);
+                        //verbose_printf("Failure with k = %d.\n", k);
                 }
                 else {
-		        verbose_printf("Here P(i) = P(i-1)\n");
+		        //verbose_printf("Here P(i) = P(i-1)\n");
 
 		        f = gcd(N, P);
 		        if(f != 1 && f != N) {

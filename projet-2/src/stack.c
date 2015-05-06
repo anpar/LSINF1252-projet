@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <inttypes.h>
 #include "core.h"       // Pour les variables globales buffer1 et buffer2
 #include "stack.h"
 
@@ -41,7 +42,7 @@ void display(struct node * stack)
         t = stack;
 
         while(t != NULL) {
-                printf("%u - ", t->content.n);
+                printf("%" PRIu64 " - ", t->content.n);
                 t = t->next;
         }
         
