@@ -63,13 +63,15 @@ divisible par un nombre plus grand que sa racine carrée (excepté lui-même) ; 
 d'arrêter les tests à sa racine. Si cette borne est atteinte, le nombre est premier.
 
 \section{Architecture générale}
-La logique que nous avons suivie pour réaliser notre programme est celle représentée sur la figure \ref{fig:arch}. 
+La logique que nous avons suivie pour réaliser notre programme est celle représentée sur la figure \ref{fig:arch}. \\
 Premièrement, nous créons autant de threads que de fichiers à traiter : ce sont les \emph{extractors}. 
 Leur rôle est d'extraire les nombres un par un des fichiers, de les traduire du \emph{Big Endian}, et de les
-mettre dans un premier buffer (\emph{buffer1}). La taille de ce dernier est fixée au nombre de threads 
+mettre dans un premier buffer (\emph{buffer1}). La taille de ce dernier est fixée par le nombre de threads 
 \emph{maxthreads n} : en effet, si le buffer est plus petit, les threads ne seront jamais utilisés de façon
 optimale, si il est plus grand, les threads n'auront pas vraiment de meilleurs performances et le buffer ne
-sera jamais rempli complètement.
+sera jamais rempli complètement. \\
+Ensuite, les threads \emph{factorizer} (dont le nombre est, pour rappel, fixé par la variable \emph{maxthreads n}) se chargent d'extirper les nombres du buffer1 et de les décomposer en facteurs premiers. Pour ce faire, ils cherchent le plus petit diviseur premier du nombre et le mettent dans un second buffer de la même taille que le premier (\emph{buffer2}). Ils réitèrent l'opération sur le quotient du nombre et du diviseur jusqu'à avoir entièrement décomposé le nombre (voir la section précédente pour plus de précisions sur l'algorithme de factorisation).\\
+Enfin, un thread unique \emph{save\_data} se charge de prendre les facteurs premiers du second buffer et de les insérer dans la structure chainée \emph{list} en mettant à jour la structure représentant un nombre afin de, au final, pouvoir identifier le facteur premier qui n'apparait qu'une seule fois.\\
 
 \begin{figure}[ht]
 	\centering
@@ -77,6 +79,16 @@ sera jamais rempli complètement.
 	\caption{L'architecture de notre programme.}
 	\label{fig:arch}
 \end{figure}
+
+\\
+Comme dit précédemment, nous avons défini une structure permettant de représenter un nombre \emph{number} définie par son contenu \emph{n} (de type uint64\_t) et d'une chaîne de caractère \emph{origin} contenant le nom de son fichier d'origine.\\
+Pour déterminer le facteur premier n'apparaissant qu'une seule fois dans la liste chaînée \emph{list}, nous avons procédé comme suit : lorsque une number est inséré dans la liste (ordonnée), on vérifie d'abord si un number possédant le même n ne s'y trouve pas déjà. Si ce n'est pas le cas, on se contente de l'insérer normalement, sinon, on change la variable origin du node en NULL. Ainsi, si un facteur n'apparaît qu'une seule fois, sa variable origin sera différente de NULL.\\
+\\
+Notre programme est divisé en plusieurs fichiers (vous trouverez parmi eux un README pour de plus amples détails). Le corps principal du programme se trouve dans upfact.c : c'est ce fichier qui sera compilé et exécuté. Dans core.c, nous avons mis l'ensemble des fonctions dépendantes des threads (l'extraction de fichiers, l'insertion dans la liste ainsi que la factorisation). L'algorithme de factorisation proprement dit se trouve quant à lui dans trial.c. D'autres fichiers plus modestes mais malgré tout importants sont aussi présents : perf.c contient la fonction relative à l'analyse de performances, io.c une fonction gérant diverses erreurs et stack.c les fonctions de gestion de la structure chaînée. Enfin, fopen.c contient les fonctions relatives à l'extraction de fichiers \emph{via} la librairie \emph{libcurl}. Ce fichier n'a pas été initialement écrit par nous mais est basé sur le code d'exemple conseillé dans les consignes de ce projet.\\
+\\
+Pour utiliser les threads à bon ascient, nous avons considéré la situation comme un problème de producteurs-consommateurs double. Les premiers producteurs sont les \emph{extractors} qui stockent les nombres dans le \emph{buffer1} qui sont consommés par les \emph{factorizers}. Ensuite, ces mêmes threads font office de producteurs du \emph{buffer2} où ils stockent les facteurs premiers consommés par le thread \emph{save\_data}. \\
+Afin d'éviter les aléas du non-déterminisme, un tel problème doit être protégé comme suit : chaque buffer doit être protégé par un mutex (pour éviter les problèmes de section critique) et leur accès est réglé par deux sémaphores chacun : un pour leurs consommateurs, l'autre pour leurs producteurs.
+
 
 \section{Performances}
 Nous avons mesuré les performances de notre programme pour différents nombres
@@ -88,7 +100,9 @@ On constate que la figure \ref{fig:speedup} ressemble fortement à la loi d'Amda
 Comme expliqué dans la section précédente, pour permettre de mieux observer
 les améliorations de performances en fonction du nombre de threads, nous avons
 utilisé un algorithme de factorisation naïf. Celui-ci rend le programme assez
-lent pour de très gros nombres (à titre d'exemple 2200 secondes pour 1 threads).
+lent pour de très gros nombres (à titre d'exemple 2200 secondes pour 1 threads). 
+\\
+On constate une nette amélioration du temps d'exécution par rapport au nombre de threads jusqu'à environ 10 threads (figure 1). Par après, les performances s'améliorent toujours mais dans une moindre mesure. Ce résultat est également bien traduit par la figure 2, illustrant l'accélération du programme par rapport au nombre de threads. En définitive, ces résultats sont conformes à ceux escomtés et à la Loi de Amdahl : l'amélioration des performances est considérable jusqu'au seuil des threads physiques où elles s'atténuent.
 
 \begin{figure}[ht]
 	\centering
@@ -105,5 +119,6 @@ lent pour de très gros nombres (à titre d'exemple 2200 secondes pour 1 threads
 	avec 8GB de RAM.}
 	\label{fig:time}
 \end{figure}
+
 
 \end{document}
