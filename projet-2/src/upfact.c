@@ -212,7 +212,7 @@ int main(int argc, char *argv[])
                 return(EXIT_FAILURE);
 
         // Output
-	printf("%d\n", (unsigned int) result.n);
+	printf("%" PRIu64 "\n", result.n);
         printf("%s\n", result.origin);
         printf("%.3lfs\n", timeval_diff(&tvEnd, &tvStart));
 

@@ -1,0 +1,72 @@
+./upfact ... --maxthreads 2
+820119749
+data/gen400-8-0001
+1236.066s
+./upfact ... --maxthreads 6
+820119749
+data/gen400-8-0001
+485.515s
+./upfact ... --maxthreads 10
+820119749
+data/gen400-8-0001
+440.532s
+./upfact ... --maxthreads 14
+820119749
+data/gen400-8-0001
+422.068s
+./upfact ... --maxthreads 16
+820119749
+data/gen400-8-0001
+415.408s
+./upfact ... --maxthreads 18
+820119749
+data/gen400-8-0001
+410.614s
+./upfact ... --maxthreads 20
+820119749
+data/gen400-8-0001
+408.480s
+./upfact ... --maxthreads 22
+820119749
+data/gen400-8-0001
+404.092s
+./upfact ... --maxthreads 24
+820119749
+data/gen400-8-0001
+402.664s
+./upfact ... --maxthreads 26
+820119749
+data/gen400-8-0001
+399.713s
+./upfact ... --maxthreads 27
+820119749
+data/gen400-8-0001
+399.648s
+./upfact ... --maxthreads 28
+820119749
+data/gen400-8-0001
+396.879s
+./upfact ... --maxthreads 2
+./upfact ... --maxthreads 6
+./upfact ... --maxthreads 10
+./upfact ... --maxthreads 14
+./upfact ... --maxthreads 16
+./upfact ... --maxthreads 18
+./upfact ... --maxthreads 20
+./upfact ... --maxthreads 22
+./upfact ... --maxthreads 24
+./upfact ... --maxthreads 26
+./upfact ... --maxthreads 27
+./upfact ... --maxthreads 28
+./upfact ... --maxthreads 2
+./upfact ... --maxthreads 6
+./upfact ... --maxthreads 10
+./upfact ... --maxthreads 14
+./upfact ... --maxthreads 16
+./upfact ... --maxthreads 18
+./upfact ... --maxthreads 20
+./upfact ... --maxthreads 22
+./upfact ... --maxthreads 24
+./upfact ... --maxthreads 26
+./upfact ... --maxthreads 27
+./upfact ... --maxthreads 28
