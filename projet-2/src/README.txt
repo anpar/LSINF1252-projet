@@ -6,6 +6,10 @@ Struture :
 - stack.c : contient les fonctions permettant de gérer les buffers (représenté par des piles) ;
 - upfact.c : programme principal, permet l'interaction avec l'utilisateur.
 
+Pour compiler libcurl :
+$ make curl
+Cette opération peut prendre un petit peu de temps.
+
 Pour compiler :
 $ make
 

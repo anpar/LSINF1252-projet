@@ -43,7 +43,6 @@ trouvions un algorithme nous permettant de décomposer un nombre en ses facteurs
  avons donc cherché les divers algorithmes existants et avons finalement retenu la méthode 
 triale pour diverses raisons qui seront explicitées par la suite.
 
-\\
 \hspace{1cm}Nous avions d'avord envisagé d'employer un algorithme plus élaboré et performant.
  Cependant, il s'est avéré laborieux à mettre en place pour des nombres de 64 bits. De plus,
  les trop bonnes performances dudit algorithme ne permettaient pas d'observer clairement 
@@ -80,9 +79,8 @@ Enfin, un thread unique \emph{save\_data} se charge de prendre les facteurs prem
 	\label{fig:arch}
 \end{figure}
 
-\\
-Comme dit précédemment, nous avons défini une structure permettant de représenter un nombre \emph{number} définie par son contenu \emph{n} (de type uint64\_t) et d'une chaîne de caractère \emph{origin} contenant le nom de son fichier d'origine.\\
-Pour déterminer le facteur premier n'apparaissant qu'une seule fois dans la liste chaînée \emph{list}, nous avons procédé comme suit : lorsque une number est inséré dans la liste (ordonnée), on vérifie d'abord si un number possédant le même n ne s'y trouve pas déjà. Si ce n'est pas le cas, on se contente de l'insérer normalement, sinon, on change la variable origin du node en NULL. Ainsi, si un facteur n'apparaît qu'une seule fois, sa variable origin sera différente de NULL.\\
+Comme dit précédemment, nous avons défini une structure permettant de représenter un nombre \emph{number} définie par son contenu $n$ (de type uint64\_t) et d'une chaîne de caractère \emph{origin} contenant le nom de son fichier d'origine.\\
+Pour déterminer le facteur premier n'apparaissant qu'une seule fois dans la liste chaînée \emph{list}, nous avons procédé comme suit : lorsque une number est inséré dans la liste (ordonnée), on vérifie d'abord si un number possédant le même $n$ ne s'y trouve pas déjà. Si ce n'est pas le cas, on se contente de l'insérer normalement, sinon, on change la variable origin du node en \emph{NULL}. Ainsi, si un facteur n'apparaît qu'une seule fois, sa variable origin sera différente de \emph{NULL}.\\
 \\
 Notre programme est divisé en plusieurs fichiers (vous trouverez parmi eux un README pour de plus amples détails). Le corps principal du programme se trouve dans upfact.c : c'est ce fichier qui sera compilé et exécuté. Dans core.c, nous avons mis l'ensemble des fonctions dépendantes des threads (l'extraction de fichiers, l'insertion dans la liste ainsi que la factorisation). L'algorithme de factorisation proprement dit se trouve quant à lui dans trial.c. D'autres fichiers plus modestes mais malgré tout importants sont aussi présents : perf.c contient la fonction relative à l'analyse de performances, io.c une fonction gérant diverses erreurs et stack.c les fonctions de gestion de la structure chaînée. Enfin, fopen.c contient les fonctions relatives à l'extraction de fichiers \emph{via} la librairie \emph{libcurl}. Ce fichier n'a pas été initialement écrit par nous mais est basé sur le code d'exemple conseillé dans les consignes de ce projet.\\
 \\
@@ -115,7 +113,7 @@ On constate une nette amélioration du temps d'exécution par rapport au nombre 
 \begin{figure}[ht]
 	\centering
 	\includegraphics[scale=0.8]{img/time.png}
-	\caption{Temps d'éxécution en fonction du nombre de threads sur un processeur i7 3770k (12 coeurs)
+	\caption{Temps d'éxécution (en secondes) en fonction du nombre de threads sur un processeur i7 3770k (12 coeurs)
 	avec 8GB de RAM.}
 	\label{fig:time}
 \end{figure}

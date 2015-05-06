@@ -2,6 +2,10 @@ CFLAGS = -std=c99 -Wall -g
 
 all: upfact
 
+curl: 
+	tar xjvf curl-7.42.1.tar.bz2
+	cd curl-7.42.1 && ./configure --prefix=$(HOME)/local && make && make install
+
 upfact: upfact.o io.o perf.o core.o stack.o fopen.o trial.o
 	gcc $(CFLAGS) -o upfact upfact.o io.o perf.o core.o stack.o fopen.o trial.o -lm -lpthread -lcurl 
 
