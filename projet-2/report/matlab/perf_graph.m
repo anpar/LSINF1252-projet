@@ -20,5 +20,5 @@ time = [
             399.648,
             396.879
        ];
-speedup = time_one./time;
+speedup = time;
 plot(threads, speedup);
