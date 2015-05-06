@@ -108,12 +108,6 @@ int main(int argc, char *argv[])
                 usage(ENOFILE);
                 return(EXIT_FAILURE);
         }
-        
-        CURLcode curl = curl_global_init(CURL_GLOBAL_DEFAULT);
-        if(curl != 0) {
-                fprintf(stderr, "Error while initializing libcurl.\n");
-                exit(EXIT_FAILURE);
-        }
 
         // filec contient le nombre de fichiers à lire (hors stdin)
         unsigned int filec = argc-optind;
@@ -220,6 +214,5 @@ int main(int argc, char *argv[])
         if(err !=0)
                 return(EXIT_FAILURE);
 
-        curl_global_cleanup();
         return(EXIT_SUCCESS);
 }
