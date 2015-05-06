@@ -31,14 +31,14 @@ et une seule fois.\\
  performances sera réalisée : le programme calculera le temps de son exécution à chaque utilisation.\\
 
 \hspace{1cm}Les nombres passés en arguments de notre programme seront écrits suivant la représentation
- \emph{Big Endian}. L'utilisateur pourra faire varier une variable \emph{maxthreads n} correspondant
- au nombre de threads actifs du programme.
+\emph{Big Endian}. L'utilisateur pourra faire varier une option \emph{-maxthreads n} correspondant
+au nombre maximum de threads de calculs du programme.
 
-\break
 \hspace{1cm}Au final, notre programme retournera le facteur premier recherché, le fichier d'origine
  de ce facteur, ainsi que le temps pris par le programme lors de son exécution.
 
-\section{Algorithme de factorisation}L'élaboration de notre programme a d'abord exigé que nous 
+\section{Algorithme de factorisation}
+L'élaboration de notre programme a d'abord exigé que nous 
 trouvions un algorithme nous permettant de décomposer un nombre en ses facteurs premiers. Nous
  avons donc cherché les divers algorithmes existants et avons finalement retenu la méthode 
 triale pour diverses raisons qui seront explicitées par la suite.
@@ -53,21 +53,28 @@ l'évolution des performances avec la variation du nombre de threads (notamment 
 \\
 
 L'algorithme trial est des plus simples : il s'agit de tester chaque diviseur possible, en commençant
- par 2 jusqu'à une valeur déterminée. Si le modulo du nombre et du diviseur potentiel est 0, alors 
+par 2 jusqu'à une valeur déterminée. Si le modulo du nombre et du diviseur potentiel est 0, alors 
 le nombre n'est pas premier ; le diviseur est retenu comme facteur premier et le procédé est réitéré
- sur la division du nombre par le facteur. Remarquons que le facteur retenu est nécessairement premier,
- si ce n'était pas le cas, un diviseur de ce facteur aurait été intercépté avant.\\
+sur la division du nombre par le facteur. Remarquons que le facteur retenu est nécessairement premier,
+si ce n'était pas le cas, un diviseur de ce facteur aurait été intercépté avant.\\
 
 Définir la borne d'arrêt des diviseurs potentiels n'est pas compliqué : un nombre ne sera jamais 
 divisible par un nombre plus grand que sa racine carrée (excepté lui-même) ; dès lors, il suffit
- d'arrêter les tests à sa racine. Si cette borne est atteinte, le nombre est premier.
+d'arrêter les tests à sa racine. Si cette borne est atteinte, le nombre est premier.
 
 \section{Architecture générale}
+\begin{figure}[ht]
+	\centering
+	\includegraphics[scale=0.8]{img/arch.png}
+	\caption{L'architecture de notre programme.}
+	\label{fig:arch}
+\end{figure}
 
 \section{Performances}
 Nous avons mesuré les performances de notre programme pour différents nombres
 de threads de calculs et pour des fichiers contenant de très grands nombres.
 Les résultats de ces mesures sont indiqués dans la figure \ref{fig:speedup}.
+On constate que la figure \ref{fig:speedup} ressemble fortement à la loi d'Amdahl.
 
 \paragraph{Remarque importante}
 Comme expliqué dans la section précédente, pour permettre de mieux observer
