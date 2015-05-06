@@ -1,11 +1,11 @@
-CFLAGS = -std=c99 -Wall 
+CFLAGS = -std=c99 -Wall -g 
 
 all: upfact
 
 upfact: upfact.o io.o perf.o core.o stack.o fopen.o trial.o
 	gcc $(CFLAGS) -o upfact upfact.o io.o perf.o core.o stack.o fopen.o trial.o -lm -lpthread -lcurl 
 
-upfact.o: upfact.c io.h perf.h util.h core.h stack.h squfof.o
+upfact.o: upfact.c io.h perf.h core.h stack.h 
 	gcc $(CFLAGS) -c upfact.c
 
 io.o: io.c io.h

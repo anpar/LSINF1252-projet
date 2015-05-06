@@ -15,7 +15,6 @@
 
 #include "io.h"
 #include "perf.h"
-#include "util.h"
 #include "core.h"
 
 #define DEBUG false
@@ -35,9 +34,6 @@ struct node * list;
 
 bool file_read = false;
 bool fact_done = false;
-
-volatile int active_readers = 0;
-volatile int active_factorizers = 0;
 
 int main(int argc, char *argv[])
 {
@@ -64,6 +60,7 @@ int main(int argc, char *argv[])
         int maxthreads = 4;
         int option = 0;
         bool read_from_stdin = false;
+	pthread_t stdin_reader;	
 
         while((option = getopt_long_only(argc, argv, "", long_options, &option_index)) != -1) {
                 switch(option) {
@@ -76,8 +73,7 @@ int main(int argc, char *argv[])
                                         
                                         maxthreads = atoi(optarg);
                                 } 
-                                else if(*(long_options[option_index].flag) == 2) {
-					pthread_t stdin_reader;                                        
+                                else if(*(long_options[option_index].flag) == 2) {                                        
 					err = pthread_create(&stdin_reader, NULL, &extract_file,(void *) "/dev/stdin");
 					if(err != 0)
 						exit(EXIT_FAILURE);
@@ -150,14 +146,6 @@ int main(int argc, char *argv[])
         if(err != 0)
                 exit(EXIT_FAILURE);
 
-        /*int last_active_readers;
-	 do {
-                //debug_printf("Waiting for readers.\n");
-                pthread_mutex_lock(&active_readers_mutex);
-                last_active_readers = active_readers;
-                pthread_mutex_unlock(&active_readers_mutex);
-		} while(last_active_readers != 0);*/
-
         // Récupération et libération des threads extractors
         // Remarque: on ne rentre dans la boucle que si files != 0.
         for(int i = 0; i < filec; i++) {
@@ -169,16 +157,15 @@ int main(int argc, char *argv[])
                 debug_printf("Extractor has terminated.\n");
         }
 
+	if(read_from_stdin) {	
+		err = pthread_join(stdin_reader, NULL);
+		if(err != 0)
+			exit(EXIT_FAILURE);
+	}
+
 	// Si on arrive ici, la lecture des fichier est terminée
-	debug_printf("Extraction finished.\n");
+        debug_printf("Extraction finished.\n");
         file_read = true;
-	
-	/* int last_active_factorizers;
-        do {
-                pthread_mutex_lock(&active_factorizers_mutex);
-                last_active_factorizers = active_factorizers;
-                pthread_mutex_unlock(&active_factorizers_mutex);
-		} while(last_active_factorizers != 0);*/
 
 	for(int i = 0; i < maxthreads; i++) {
                 err = pthread_join(calculators[i], NULL);

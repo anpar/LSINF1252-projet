@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <inttypes.h>
-#include "core.h"       // Pour les variables globales buffer1 et buffer2
+#include "core.h"
 #include "stack.h"
 
 #define DEBUG false

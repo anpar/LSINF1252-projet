@@ -3,9 +3,6 @@
 #include <pthread.h>
 #include <inttypes.h>
 
-pthread_mutex_t active_readers_mutex;
-pthread_mutex_t active_factorizers_mutex;
-
 /* 
  * n is a number and origin is the name
  * of the file where this factor was found.
