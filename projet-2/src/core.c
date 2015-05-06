@@ -18,7 +18,7 @@
 #include "stack.h"
 #include "trial.h"
 
-#define DEBUG true
+#define DEBUG false
 /* 
  * This macro requires c99.
  */
@@ -84,9 +84,9 @@ void * extract_file(void * filename)
         bool empty = true;
 	while(url_fread(&n, sizeof(uint64_t), 1, handle) != 0) {
 		empty = false;
-                //debug_printf("Reading %s : ", file);
+                debug_printf("Reading %s : ", file);
 		n = be64toh(n);
-                //debug_printf("%" PRIu64 "\n", n);
+                debug_printf("%" PRIu64 "\n", n);
 		(&new)->n = n;
 		(&new)->origin = file;
 		sem_wait(&empty1);
