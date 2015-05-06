@@ -83,7 +83,10 @@ size_t url_fread(void *ptr, size_t size, size_t nmemb, URL_FILE *file);
 char * url_fgets(char *ptr, size_t size, URL_FILE *file);
 void url_rewind(URL_FILE *file);
 
-/* we use a global one for convenience */
+/*
+	REMARQUE : nous avons rendu cette variable 'thread local'
+	pour rendre tous le code ici thread safe. 
+*/
 __thread CURLM *multi_handle;
 
 /* curl calls this routine to get more data */

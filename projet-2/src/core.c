@@ -16,7 +16,7 @@
 #include "stack.h"
 #include "trial.h"
 
-#define DEBUG true
+#define DEBUG false
 /* 
  * This macro requires c99.
  */
@@ -45,8 +45,6 @@ extern bool fact_done;
 bool is_empty_buffer1 = false;
 bool is_empty_buffer2 = false;
 
-extern pthread_mutex_t rd;
-
 void * extract_file(void * filename) 
 {
 	URL_FILE *handle;
@@ -56,6 +54,7 @@ void * extract_file(void * filename)
         
         handle = url_fopen(file, "rb");
         // Ne détecte pas si le fichier n'existe pas...
+	// Sands doute une erreur de libcurl.
         if(handle == NULL) {
 		fprintf(stderr, "Error while opening %s.\n", file);
                 exit(EXIT_FAILURE);	
@@ -68,7 +67,6 @@ void * extract_file(void * filename)
 	while(url_fread(&n, sizeof(uint64_t), 1, handle) != 0) {
 		empty = false;
 		n = be64toh(n);
-                debug_printf("Reading %s : %" PRIu64 "\n",file, n);
 		(&new)->n = n;
 		(&new)->origin = file;
 		sem_wait(&empty1);
@@ -99,7 +97,6 @@ void prime_factorizer(uint64_t n, char * origin)
         struct number new = {0, NULL};
         if(r == IS_PRIME) {
                 (&new)->n = n;
-                debug_printf("Factor : %" PRIu64 "\n", n);
                 (&new)->origin = origin;
                 sem_wait(&empty2); 
                 pthread_mutex_lock(&mutex2);
@@ -114,14 +111,16 @@ void prime_factorizer(uint64_t n, char * origin)
 
 void * factorize(void * n)
 {
-        //debug_printf("In factorize.\n");
         int err;
 	struct number *item = (struct number *) malloc(sizeof(struct number));
+	if(item == NULL)
+		exit(EXIT_FAILURE);
+
         while(!(file_read && is_empty_buffer1)) {
                 errno = 0;
                 err = sem_trywait(&full1); 
                 // Attente d'un slot rempli, s'il il n'y en
-                // a pas, on passe le bloc suivant et on
+                // a pas, on passe le bloc de code suivant et on
                 // exécute encore la boucle. S'il y en a un
                 // on rentre dans le bloc suivant.
                 if(!(err != 0 && errno == EAGAIN)) {
@@ -180,6 +179,7 @@ void insert(struct number * new_number)
         }
 }
 
+// Utiliser pour débugger le programme.
 void print_list()
 {
         struct node * current = list;
@@ -194,6 +194,9 @@ void * save_data(void * n)
 {
         int err;
 	struct number *item = (struct number *) malloc(sizeof(struct number));
+	if(item == NULL)
+		exit(EXIT_FAILURE);
+
         while(!(fact_done && is_empty_buffer2)) {
                 errno = 0;
                 err = sem_trywait(&full2); 
@@ -239,7 +242,6 @@ int find_unique(struct number * unique)
         if(list == NULL)
                 return(EXIT_FAILURE);
 
-	// Create a node in order to check the list node by node
 	struct node *runner;
 	runner = list;
 
