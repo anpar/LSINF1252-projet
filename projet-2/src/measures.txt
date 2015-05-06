@@ -46,3 +46,27 @@ data/gen400-8-0001
 820119749
 data/gen400-8-0001
 396.879s
+./upfact ... --maxthreads 2
+./upfact ... --maxthreads 6
+./upfact ... --maxthreads 10
+./upfact ... --maxthreads 14
+./upfact ... --maxthreads 16
+./upfact ... --maxthreads 18
+./upfact ... --maxthreads 20
+./upfact ... --maxthreads 22
+./upfact ... --maxthreads 24
+./upfact ... --maxthreads 26
+./upfact ... --maxthreads 27
+./upfact ... --maxthreads 28
+./upfact ... --maxthreads 2
+./upfact ... --maxthreads 6
+./upfact ... --maxthreads 10
+./upfact ... --maxthreads 14
+./upfact ... --maxthreads 16
+./upfact ... --maxthreads 18
+./upfact ... --maxthreads 20
+./upfact ... --maxthreads 22
+./upfact ... --maxthreads 24
+./upfact ... --maxthreads 26
+./upfact ... --maxthreads 27
+./upfact ... --maxthreads 28
